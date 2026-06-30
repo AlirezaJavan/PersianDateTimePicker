@@ -1,4 +1,4 @@
-package com.javanapps.shamsipicker.ui
+package io.github.alirezajavan.shamsipicker.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -37,9 +37,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.javanapps.shamsipicker.calendar.ShamsiCalendar
-import com.javanapps.shamsipicker.model.ShamsiDate
-import com.javanapps.shamsipicker.R
+import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
+import io.github.alirezajavan.shamsipicker.model.ShamsiDate
+import io.github.alirezajavan.shamsipicker.R
 
 /** Visual style for [ShamsiDatePickerDialog]. */
 public enum class ShamsiDatePickerStyle {

@@ -1,4 +1,4 @@
-package com.javanapps.shamsipicker.sample
+package io.github.alirezajavan.shamsipicker.sample
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,11 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.javanapps.shamsipicker.calendar.ShamsiCalendar
-import com.javanapps.shamsipicker.ui.ShamsiDateFormatter
-import com.javanapps.shamsipicker.ui.ShamsiDatePickerDialog
-import com.javanapps.shamsipicker.ui.ShamsiDatePickerStyle
-import com.javanapps.shamsipicker.ui.ShamsiTimePickerDialog
+import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
+import io.github.alirezajavan.shamsipicker.ui.ShamsiDateFormatter
+import io.github.alirezajavan.shamsipicker.ui.ShamsiDatePickerDialog
+import io.github.alirezajavan.shamsipicker.ui.ShamsiDatePickerStyle
+import io.github.alirezajavan.shamsipicker.ui.ShamsiTimePickerDialog
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

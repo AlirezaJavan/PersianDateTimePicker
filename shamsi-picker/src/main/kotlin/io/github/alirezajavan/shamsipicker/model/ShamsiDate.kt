@@ -1,4 +1,4 @@
-package com.javanapps.shamsipicker.model
+package io.github.alirezajavan.shamsipicker.model
 
 import kotlinx.serialization.Serializable
 

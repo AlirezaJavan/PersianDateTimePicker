@@ -1,4 +1,4 @@
-package com.javanapps.shamsipicker.ui
+package io.github.alirezajavan.shamsipicker.ui
 
 import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +22,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.javanapps.shamsipicker.R
+import io.github.alirezajavan.shamsipicker.R
 
 private const val MINUTES_PER_DAY: Int = 24 * 60
 

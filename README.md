@@ -17,7 +17,7 @@ Add the following to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.javanapps:shamsi-picker:1.0.0")
+    implementation("io.github.alirezajavan:shamsi-picker:1.0.0")
 }
 ```
 

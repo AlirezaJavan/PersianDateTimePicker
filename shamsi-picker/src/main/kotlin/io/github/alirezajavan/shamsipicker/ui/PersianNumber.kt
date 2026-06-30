@@ -1,4 +1,7 @@
-package com.javanapps.shamsipicker.ui
+package io.github.alirezajavan.shamsipicker.ui
+
+import kotlin.math.abs
+import kotlin.text.iterator
 
 /** Persian/Farsi number formatting helpers. Pure functions, fully unit-testable. */
 public object PersianNumber {
@@ -26,7 +29,7 @@ public object PersianNumber {
     /** Groups [amount] in thousands with the Persian separator and Persian digits, e.g. ۱٬۲۳۴٬۵۶۷. */
     public fun grouped(amount: Long): String {
         val negative = amount < 0
-        val digits = kotlin.math.abs(amount).toString()
+        val digits = abs(amount).toString()
         val grouped =
             buildString {
                 val firstGroup = digits.length % 3

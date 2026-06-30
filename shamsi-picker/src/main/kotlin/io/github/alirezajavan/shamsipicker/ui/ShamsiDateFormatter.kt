@@ -1,8 +1,8 @@
-package com.javanapps.shamsipicker.ui
+package io.github.alirezajavan.shamsipicker.ui
 
-import com.javanapps.shamsipicker.calendar.ShamsiCalendar
-import com.javanapps.shamsipicker.model.MonthKey
-import com.javanapps.shamsipicker.model.ShamsiDate
+import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
+import io.github.alirezajavan.shamsipicker.model.MonthKey
+import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 
 /** Persian display formatting for Shamsi dates. Pure functions, unit-testable. */
 public object ShamsiDateFormatter {

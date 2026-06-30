@@ -1,8 +1,8 @@
-package com.javanapps.shamsipicker
+package io.github.alirezajavan.shamsipicker
 
 import com.google.common.truth.Truth.assertThat
-import com.javanapps.shamsipicker.calendar.ShamsiCalendar
-import com.javanapps.shamsipicker.model.ShamsiDate
+import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
+import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 

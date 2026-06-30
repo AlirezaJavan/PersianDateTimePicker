@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.javanapps.shamsipicker"
+    namespace = "io.github.alirezajavan.shamsipicker"
     compileSdk = 37
 
     defaultConfig {

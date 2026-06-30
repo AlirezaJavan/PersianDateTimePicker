@@ -1,4 +1,4 @@
-package com.javanapps.shamsipicker.ui
+package io.github.alirezajavan.shamsipicker.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -14,12 +14,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -39,6 +42,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.abs
 
@@ -87,7 +92,7 @@ public fun WheelPicker(
     fun rawToLogical(raw: Int) = if (infinite) ((raw % itemCount) + itemCount) % itemCount else raw
 
     val centeredLogical by remember(listState, itemCount, infinite) {
-        androidx.compose.runtime.derivedStateOf {
+        derivedStateOf {
             val info = listState.layoutInfo
             val viewportCenter = (info.viewportStartOffset + info.viewportEndOffset) / 2f
             val nearest =
@@ -270,11 +275,10 @@ internal fun PickerDialogScaffold(
     header: (@Composable () -> Unit)? = null,
     body: @Composable () -> Unit,
 ) {
-    androidx.compose.ui.window.Dialog(
+    Dialog(
         onDismissRequest = onCancel,
         properties =
-            androidx.compose.ui.window
-                .DialogProperties(usePlatformDefaultWidth = false),
+            DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Surface(
             modifier =
@@ -302,12 +306,12 @@ internal fun PickerDialogScaffold(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    androidx.compose.material3.OutlinedButton(
+                    OutlinedButton(
                         onClick = onCancel,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
                     ) { Text(cancelText) }
-                    androidx.compose.material3.Button(
+                    Button(
                         onClick = onConfirm,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),

@@ -1,8 +1,9 @@
-package com.javanapps.shamsipicker.calendar
+package io.github.alirezajavan.shamsipicker.calendar
 
-import com.javanapps.shamsipicker.model.ShamsiDate
+import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 
 /**
@@ -84,7 +85,7 @@ public object ShamsiCalendar {
 
     /** The current Shamsi date & time in the given [zone]. */
     public fun now(zone: ZoneId = ZoneId.systemDefault()): ShamsiDate {
-        val nowDateTime = java.time.LocalDateTime.now(zone)
+        val nowDateTime = LocalDateTime.now(zone)
         return fromGregorian(nowDateTime.toLocalDate())
             .copy(hour = nowDateTime.hour, minute = nowDateTime.minute)
     }
