@@ -26,7 +26,7 @@ public object ShamsiCalendar {
             "اسفند",
         )
 
-    /** Weekday names indexed Saturday..Friday (the Persian week starts on Saturday). */
+    /** Weekday names indexed Saturday...Friday (the Persian week starts on Saturday). */
     public val WEEKDAY_NAMES: List<String> =
         listOf(
             "شنبه",
@@ -63,7 +63,7 @@ public object ShamsiCalendar {
     /** Persian weekday name for the given Shamsi date. */
     public fun weekdayName(date: ShamsiDate): String {
         val gregorian = toGregorian(date)
-        // java.time: MONDAY=1 .. SUNDAY=7. Persian week starts Saturday.
+        // java.time: MONDAY=1 ... SUNDAY=7. Persian week starts Saturday.
         val isoDow = gregorian.dayOfWeek.value // 1..7 Mon..Sun
         val index = (isoDow + 1) % 7 // Sat->0, Sun->1, ... Fri->6
         return WEEKDAY_NAMES[index]
@@ -110,7 +110,7 @@ public object ShamsiCalendar {
             .copy(hour = dateTime.hour, minute = dateTime.minute)
     }
 
-    // region jalaali integer algorithm
+    // region Jalali integer algorithm
 
     private data class JalCal(
         val leap: Int,
@@ -157,7 +157,7 @@ public object ShamsiCalendar {
         val gy = jy + 621
         var leapJ = -14
         var jp = BREAKS[0]
-        require(jy in jp until BREAKS[bl - 1]) { "Invalid Jalaali year $jy" }
+        require(jy in jp until BREAKS[bl - 1]) { "Invalid Jalali year $jy" }
         var jump = 0
         var jm: Int
         for (i in 1 until bl) {

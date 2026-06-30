@@ -7,11 +7,11 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 public data class ShamsiDate(
-    val year: Int,
-    val month: Int,
-    val day: Int,
-    val hour: Int = 0,
-    val minute: Int = 0,
+    public val year: Int,
+    public val month: Int,
+    public val day: Int,
+    public val hour: Int = 0,
+    public val minute: Int = 0,
 ) : Comparable<ShamsiDate> {
     /** The year/month this date belongs to, useful for monthly grouping and navigation. */
     public val monthKey: MonthKey get() = MonthKey(year, month)

@@ -181,7 +181,7 @@ public fun WheelPicker(
         ) {
             items(listCount) { listIndex ->
                 val raw = listIndex - half
-                if (raw < 0 || raw >= total) {
+                if (raw !in 0..<total) {
                     Box(modifier = Modifier.height(itemHeight))
                 } else {
                     val logical = rawToLogical(raw)

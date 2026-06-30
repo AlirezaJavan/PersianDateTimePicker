@@ -11,7 +11,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        minSdk = 26
+        minSdk = 23
         consumerProguardFiles("consumer-rules.pro")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -33,6 +33,13 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
+    }
+
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
     }
 }
 
@@ -42,6 +49,7 @@ kotlin {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugarJdkLibs)
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.serialization.json)
 

@@ -1,5 +1,10 @@
 # ShamsiPicker
 
+[![Android CI](https://github.com/AlirezaJavan/PersianDateTimePicker/actions/workflows/android.yml/badge.svg)](https://github.com/AlirezaJavan/PersianDateTimePicker/actions/workflows/android.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.alirezajavan/shamsi-picker)](https://central.sonatype.com/artifact/io.github.alirezajavan/shamsi-picker)
+[![API](https://img.shields.io/badge/API-23%2B-brightgreen.svg)](https://android-arsenal.com/api?level=23)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A modern, highly customizable Shamsi (Persian/Jalali) date and time picker library for Jetpack Compose.
 
 ## Features
