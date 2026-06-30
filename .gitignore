@@ -1,0 +1,16 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.keystore
+*.jks
+secring.gpg
+/sample/build/*
+/shamsi-picker/build/*
+/shamsi-picker/schemas/

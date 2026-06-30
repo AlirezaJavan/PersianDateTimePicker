@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shamsi_date_picker_title">انتخاب تاریخ</string>
+    <string name="shamsi_date_picker_confirm">تایید</string>
+    <string name="shamsi_date_picker_cancel">انصراف</string>
+    <string name="shamsi_date_picker_style_wheel">چرخی</string>
+    <string name="shamsi_date_picker_style_calendar">تقویمی</string>
+    <string name="shamsi_date_picker_prev_month">ماه قبل</string>
+    <string name="shamsi_date_picker_next_month">ماه بعد</string>
+    <string name="shamsi_date_picker_prev_year">سال قبل</string>
+    <string name="shamsi_date_picker_next_year">سال بعد</string>
+    <string name="shamsi_time_picker_title">انتخاب زمان</string>
+    <string name="shamsi_time_picker_confirm">تایید</string>
+    <string name="shamsi_time_picker_cancel">انصراف</string>
+    <string name="shamsi_time_am">ق.ظ</string>
+    <string name="shamsi_time_pm">ب.ظ</string>
+</resources>
