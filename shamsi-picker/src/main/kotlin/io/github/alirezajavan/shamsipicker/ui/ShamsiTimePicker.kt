@@ -23,26 +23,40 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
+import io.github.alirezajavan.shamsipicker.model.ShamsiTime
+import io.github.alirezajavan.shamsipicker.model.ShamsiTimeLimit
+import io.github.alirezajavan.shamsipicker.model.ShamsiTimePickerConfig
 
 private const val MINUTES_PER_DAY: Int = 24 * 60
 
 /**
  * An iOS-style Shamsi time picker dialog.
+ *
+ * Use [ShamsiTimePickerConfig] to set the initial time and optional time bounds.
+ * All time fields in the config accept any [ShamsiTimeLimit]:
+ * - `ShamsiTime(8, 30)` — a fixed time
+ * - `ShamsiTime.Now` / `ShamsiTimeLimit.Now` — current time, resolved at open time
+ * - `LocalTime.of(9, 0).asLimit()` — a fixed Gregorian time
+ * - `LocalTime.now().asLimit()` — current system time, resolved at open time
  */
 @Composable
 public fun ShamsiTimePickerDialog(
-    initialHour: Int,
-    initialMinute: Int,
-    onConfirm: (hour: Int, minute: Int) -> Unit,
+    onConfirm: (ShamsiTime) -> Unit,
     onDismiss: () -> Unit,
-    minTotalMinutes: Int? = null,
-    maxTotalMinutes: Int? = null,
+    config: ShamsiTimePickerConfig = ShamsiTimePickerConfig(),
 ) {
+    val initialTime = remember { config.initialTime.toShamsiTime() }
+    val initialHour = initialTime.hour
+    val initialMinute = initialTime.minute
+
+    val resolvedMin = remember(config.minTime) { config.minTime?.toShamsiTime() }
+    val resolvedMax = remember(config.maxTime) { config.maxTime?.toShamsiTime() }
+
     val context = LocalContext.current
     val is24h = DateFormat.is24HourFormat(context)
 
-    val lo = (minTotalMinutes ?: 0).coerceIn(0, MINUTES_PER_DAY - 1)
-    val hi = (maxTotalMinutes ?: (MINUTES_PER_DAY - 1)).coerceIn(lo, MINUTES_PER_DAY - 1)
+    val lo = (resolvedMin?.totalMinutes ?: 0).coerceIn(0, MINUTES_PER_DAY - 1)
+    val hi = (resolvedMax?.totalMinutes ?: (MINUTES_PER_DAY - 1)).coerceIn(lo, MINUTES_PER_DAY - 1)
     val hMin = lo / 60
     val hMax = hi / 60
 
@@ -70,7 +84,7 @@ public fun ShamsiTimePickerDialog(
         confirmText = stringResource(R.string.shamsi_time_picker_confirm),
         cancelText = stringResource(R.string.shamsi_time_picker_cancel),
         onCancel = onDismiss,
-        onConfirm = { onConfirm(currentHour24, minute) },
+        onConfirm = { onConfirm(ShamsiTime(currentHour24, minute)) },
     ) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(

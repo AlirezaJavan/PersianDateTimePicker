@@ -40,18 +40,11 @@ import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
+import io.github.alirezajavan.shamsipicker.model.ShamsiDateLimit
+import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
+import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
 
-/** Visual style for [ShamsiDatePickerDialog]. */
-public enum class ShamsiDatePickerStyle {
-    /** iOS-style three-column spinning drum (day · month · year). */
-    Wheel,
-
-    /** A modern month-grid calendar with circular day selection. */
-    Calendar,
-}
-
-/** The default span of Shamsi years a [ShamsiDatePickerDialog] can scroll through. */
-public val DefaultShamsiYearRange: IntRange = 1300..1500
+internal val ShamsiYearRange: IntRange = 1200..1600
 
 /** Year/month/day-only ordering key, ignoring the time fields of a [ShamsiDate]. */
 private fun ShamsiDate.dateKey(): Int = year * 10_000 + month * 100 + day
@@ -98,24 +91,31 @@ private fun dayBounds(
 
 /**
  * A fully Persian/Shamsi date picker dialog.
+ *
+ * Use [ShamsiDatePickerConfig] to set the initial date, optional date bounds, and display style.
+ * All date fields in the config accept any [ShamsiDateLimit]:
+ * - `ShamsiDate(1403, 1, 1)` — a fixed Shamsi date
+ * - `ShamsiDate.Now` / `ShamsiDateLimit.Now` — today's date, resolved at open time
+ * - `LocalDate.of(2024, 3, 20).asLimit()` — a Gregorian date converted to Shamsi
+ * - `LocalDate.now().asLimit()` — today's Gregorian date, resolved at open time
  */
 @Composable
 public fun ShamsiDatePickerDialog(
-    initialDate: ShamsiDate,
     onConfirm: (ShamsiDate) -> Unit,
     onDismiss: () -> Unit,
-    style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
-    yearRange: IntRange = DefaultShamsiYearRange,
-    minDate: ShamsiDate? = null,
-    maxDate: ShamsiDate? = null,
+    config: ShamsiDatePickerConfig = ShamsiDatePickerConfig(),
 ) {
-    var currentStyle by remember { mutableStateOf(style) }
-    var year by remember { mutableIntStateOf(initialDate.year.coerceIn(yearRange.first, yearRange.last)) }
+    val initialDate = remember { config.initialDate.toShamsiDate() }
+    val resolvedMin = remember(config.minDate) { config.minDate?.toShamsiDate() }
+    val resolvedMax = remember(config.maxDate) { config.maxDate?.toShamsiDate() }
+
+    var currentStyle by remember { mutableStateOf(config.style) }
+    var year by remember { mutableIntStateOf(initialDate.year.coerceIn(ShamsiYearRange.first, ShamsiYearRange.last)) }
     var month by remember { mutableIntStateOf(initialDate.month) }
     var day by remember { mutableIntStateOf(initialDate.day) }
 
     val maxDay = ShamsiCalendar.monthLength(year, month)
-    val days = dayBounds(year, month, maxDay, minDate, maxDate)
+    val days = dayBounds(year, month, maxDay, resolvedMin, resolvedMax)
     if (day > days.last) day = days.last
     if (day < days.first) day = days.first
 
@@ -134,9 +134,8 @@ public fun ShamsiDatePickerDialog(
                     month = month,
                     day = day,
                     maxDay = maxDay,
-                    yearRange = yearRange,
-                    minDate = minDate,
-                    maxDate = maxDate,
+                    minDate = resolvedMin,
+                    maxDate = resolvedMax,
                     onYear = { year = it },
                     onMonth = { month = it },
                     onDay = { day = it },
@@ -150,9 +149,9 @@ public fun ShamsiDatePickerDialog(
                     day = day,
                     maxDay = maxDay,
                     dayBounds = days,
-                    minDate = minDate,
-                    maxDate = maxDate,
-                    onYear = { year = it.coerceIn(yearRange.first, yearRange.last) },
+                    minDate = resolvedMin,
+                    maxDate = resolvedMax,
+                    onYear = { year = it.coerceIn(ShamsiYearRange.first, ShamsiYearRange.last) },
                     onMonth = { month = it },
                     onDay = { day = it },
                 )
@@ -167,7 +166,6 @@ private fun WheelDatePicker(
     month: Int,
     day: Int,
     maxDay: Int,
-    yearRange: IntRange,
     minDate: ShamsiDate?,
     maxDate: ShamsiDate?,
     onYear: (Int) -> Unit,
@@ -200,12 +198,12 @@ private fun WheelDatePicker(
             modifier = Modifier.width(116.dp),
         )
         WheelPicker(
-            itemCount = yearRange.count(),
-            initialIndex = year - yearRange.first,
-            label = { PersianNumber.toPersianDigits((yearRange.first + it).toLong()) },
-            onSelectedIndexChange = { onYear(yearRange.first + it) },
+            itemCount = ShamsiYearRange.count(),
+            initialIndex = year - ShamsiYearRange.first,
+            label = { PersianNumber.toPersianDigits((ShamsiYearRange.first + it).toLong()) },
+            onSelectedIndexChange = { onYear(ShamsiYearRange.first + it) },
             infinite = false,
-            enabledRange = yearEnabledRange(yearRange, minDate, maxDate),
+            enabledRange = yearEnabledRange(ShamsiYearRange, minDate, maxDate),
             modifier = Modifier.width(86.dp),
         )
     }

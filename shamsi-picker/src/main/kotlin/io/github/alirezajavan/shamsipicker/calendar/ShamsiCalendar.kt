@@ -1,9 +1,11 @@
 package io.github.alirezajavan.shamsipicker.calendar
 
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
+import io.github.alirezajavan.shamsipicker.model.ShamsiTime
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 
 /**
@@ -82,6 +84,12 @@ public object ShamsiCalendar {
         val (gy, gm, gd) = jdnToGregorian(jdn)
         return LocalDate.of(gy, gm, gd)
     }
+
+    /** Converts a Gregorian [LocalTime] to [ShamsiTime]. */
+    public fun fromLocalTime(time: LocalTime): ShamsiTime = ShamsiTime.fromLocalTime(time)
+
+    /** Converts a [ShamsiTime] to a Gregorian [LocalTime]. */
+    public fun toLocalTime(time: ShamsiTime): LocalTime = time.toLocalTime()
 
     /** The current Shamsi date & time in the given [zone]. */
     public fun now(zone: ZoneId = ZoneId.systemDefault()): ShamsiDate {

@@ -23,9 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
+import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
+import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
+import io.github.alirezajavan.shamsipicker.model.ShamsiTimePickerConfig
 import io.github.alirezajavan.shamsipicker.ui.ShamsiDateFormatter
 import io.github.alirezajavan.shamsipicker.ui.ShamsiDatePickerDialog
-import io.github.alirezajavan.shamsipicker.ui.ShamsiDatePickerStyle
 import io.github.alirezajavan.shamsipicker.ui.ShamsiTimePickerDialog
 
 class MainActivity : ComponentActivity() {
@@ -88,25 +90,30 @@ fun SampleScreen() {
 
     if (showDatePicker) {
         ShamsiDatePickerDialog(
-            initialDate = selectedDate,
             onConfirm = {
                 selectedDate = it
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false },
-            style = ShamsiDatePickerStyle.Calendar,
+            config =
+                ShamsiDatePickerConfig(
+                    initialDate = selectedDate,
+                    style = ShamsiDatePickerStyle.Calendar,
+                ),
         )
     }
 
     if (showTimePicker) {
         ShamsiTimePickerDialog(
-            initialHour = selectedDate.hour,
-            initialMinute = selectedDate.minute,
-            onConfirm = { h, m ->
-                selectedDate = selectedDate.copy(hour = h, minute = m)
+            onConfirm = { time ->
+                selectedDate = selectedDate.copy(hour = time.hour, minute = time.minute)
                 showTimePicker = false
             },
             onDismiss = { showTimePicker = false },
+            config =
+                ShamsiTimePickerConfig(
+                    initialTime = selectedDate.toTime(),
+                ),
         )
     }
 }
