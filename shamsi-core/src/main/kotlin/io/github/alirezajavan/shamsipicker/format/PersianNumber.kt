@@ -8,7 +8,7 @@ public object PersianNumber {
 
     /** Persian thousands separator (U+066C ARABIC THOUSANDS SEPARATOR). */
     private const val GROUP_SEPARATOR = '٬'
-    public const val TOMAN_SUFFIX: String = "تومان"
+    private const val TOMAN_SUFFIX: String = "تومان"
 
     /** Converts every Latin/Arabic-Indic digit in [text] to its Persian glyph. */
     public fun toPersianDigits(text: String): String =
