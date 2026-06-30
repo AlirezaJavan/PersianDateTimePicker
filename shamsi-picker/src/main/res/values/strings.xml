@@ -14,4 +14,11 @@
     <string name="shamsi_time_picker_cancel">انصراف</string>
     <string name="shamsi_time_am">ق.ظ</string>
     <string name="shamsi_time_pm">ب.ظ</string>
+    <string name="shamsi_date_range_picker_title">انتخاب بازه تاریخ</string>
+    <string name="shamsi_date_range_picker_from">از</string>
+    <string name="shamsi_date_range_picker_to">تا</string>
+    <string name="shamsi_date_range_picker_hint_select_to">تاریخ پایان را انتخاب کنید</string>
+    <string name="shamsi_time_range_picker_title">انتخاب بازه زمان</string>
+    <string name="shamsi_time_range_picker_from">از</string>
+    <string name="shamsi_time_range_picker_to">تا</string>
 </resources>
