@@ -1,7 +1,6 @@
-package io.github.alirezajavan.shamsipicker.ui
+package io.github.alirezajavan.shamsipicker.format
 
 import kotlin.math.abs
-import kotlin.text.iterator
 
 /** Persian/Farsi number formatting helpers. Pure functions, fully unit-testable. */
 public object PersianNumber {

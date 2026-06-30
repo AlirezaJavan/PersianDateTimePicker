@@ -1,11 +1,11 @@
 package io.github.alirezajavan.shamsipicker
 
-import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiTime
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRange
-import org.junit.jupiter.api.Test
+import org.junit.Test
 
 /**
  * Tests for range picker logic: selection state machine, auto-swap, and config resolution.
@@ -26,7 +26,7 @@ class ShamsiRangePickerLogicTest {
             from = earlier
             to = later
         }
-        assertThat(from).isAtMost(to)
+        Truth.assertThat(from).isAtMost(to)
     }
 
     @Test
@@ -37,7 +37,7 @@ class ShamsiRangePickerLogicTest {
         val tapped = ShamsiDate(1403, 2, 5)
         from = tapped
 
-        assertThat(from).isEqualTo(tapped)
+        Truth.assertThat(from).isEqualTo(tapped)
     }
 
     @Test
@@ -53,8 +53,8 @@ class ShamsiRangePickerLogicTest {
             to = tapped
         }
 
-        assertThat(from).isEqualTo(ShamsiDate(1403, 1, 1))
-        assertThat(to).isEqualTo(ShamsiDate(1403, 1, 15))
+        Truth.assertThat(from).isEqualTo(ShamsiDate(1403, 1, 1))
+        Truth.assertThat(to).isEqualTo(ShamsiDate(1403, 1, 15))
     }
 
     @Test
@@ -70,9 +70,9 @@ class ShamsiRangePickerLogicTest {
             to = tapped
         }
 
-        assertThat(from).isEqualTo(ShamsiDate(1403, 1, 5))
-        assertThat(to).isEqualTo(ShamsiDate(1403, 3, 10))
-        assertThat(from).isLessThan(to)
+        Truth.assertThat(from).isEqualTo(ShamsiDate(1403, 1, 5))
+        Truth.assertThat(to).isEqualTo(ShamsiDate(1403, 3, 10))
+        Truth.assertThat(from).isLessThan(to)
     }
 
     @Test
@@ -88,7 +88,7 @@ class ShamsiRangePickerLogicTest {
             to = tapped
         }
 
-        assertThat(from).isEqualTo(to)
+        Truth.assertThat(from).isEqualTo(to)
     }
 
     @Test
@@ -99,8 +99,8 @@ class ShamsiRangePickerLogicTest {
         val key1 = d1.year * 10_000 + d1.month * 100 + d1.day
         val key2 = d2.year * 10_000 + d2.month * 100 + d2.day
         val key3 = d3.year * 10_000 + d3.month * 100 + d3.day
-        assertThat(key1).isLessThan(key2)
-        assertThat(key2).isLessThan(key3)
+        Truth.assertThat(key1).isLessThan(key2)
+        Truth.assertThat(key2).isLessThan(key3)
     }
 
     @Test
@@ -113,11 +113,11 @@ class ShamsiRangePickerLogicTest {
             return key in (fromKey + 1)..<toKey
         }
 
-        assertThat(inRange(ShamsiDate(1403, 1, 1))).isFalse() // from itself
-        assertThat(inRange(ShamsiDate(1403, 1, 5))).isTrue() // middle
-        assertThat(inRange(ShamsiDate(1403, 1, 10))).isFalse() // to itself
-        assertThat(inRange(ShamsiDate(1402, 12, 31))).isFalse() // before from
-        assertThat(inRange(ShamsiDate(1403, 1, 11))).isFalse() // after to
+        Truth.assertThat(inRange(ShamsiDate(1403, 1, 1))).isFalse() // from itself
+        Truth.assertThat(inRange(ShamsiDate(1403, 1, 5))).isTrue() // middle
+        Truth.assertThat(inRange(ShamsiDate(1403, 1, 10))).isFalse() // to itself
+        Truth.assertThat(inRange(ShamsiDate(1402, 12, 31))).isFalse() // before from
+        Truth.assertThat(inRange(ShamsiDate(1403, 1, 11))).isFalse() // after to
     }
 
     @Test
@@ -125,9 +125,9 @@ class ShamsiRangePickerLogicTest {
         val from = ShamsiDate(1403, 6, 15)
         val to = ShamsiDate(1403, 1, 1)
         val result = if (from <= to) ShamsiDateRange(from, to) else ShamsiDateRange(to, from)
-        assertThat(result.from).isEqualTo(to)
-        assertThat(result.to).isEqualTo(from)
-        assertThat(result.from).isLessThan(result.to)
+        Truth.assertThat(result.from).isEqualTo(to)
+        Truth.assertThat(result.to).isEqualTo(from)
+        Truth.assertThat(result.from).isLessThan(result.to)
     }
 
     @Test
@@ -138,8 +138,8 @@ class ShamsiRangePickerLogicTest {
             run {
                 if (later <= earlier) later to earlier else earlier to later
             }
-        assertThat(initFrom).isEqualTo(earlier)
-        assertThat(initTo).isEqualTo(later)
+        Truth.assertThat(initFrom).isEqualTo(earlier)
+        Truth.assertThat(initTo).isEqualTo(later)
     }
 
     // ── ShamsiTimeRange ──────────────────────────────────────────────────────────
@@ -157,7 +157,7 @@ class ShamsiRangePickerLogicTest {
             from = earlier
             to = later
         }
-        assertThat(from).isAtMost(to)
+        Truth.assertThat(from).isAtMost(to)
     }
 
     @Test
@@ -165,9 +165,9 @@ class ShamsiRangePickerLogicTest {
         val from = ShamsiTime(18, 0)
         val to = ShamsiTime(9, 0)
         val result = if (from <= to) ShamsiTimeRange(from, to) else ShamsiTimeRange(to, from)
-        assertThat(result.from).isEqualTo(to)
-        assertThat(result.to).isEqualTo(from)
-        assertThat(result.from).isLessThan(result.to)
+        Truth.assertThat(result.from).isEqualTo(to)
+        Truth.assertThat(result.to).isEqualTo(from)
+        Truth.assertThat(result.from).isLessThan(result.to)
     }
 
     @Test
@@ -175,8 +175,8 @@ class ShamsiRangePickerLogicTest {
         val from = ShamsiTime(8, 0)
         val to = ShamsiTime(17, 30)
         val result = if (from <= to) ShamsiTimeRange(from, to) else ShamsiTimeRange(to, from)
-        assertThat(result.from).isEqualTo(from)
-        assertThat(result.to).isEqualTo(to)
+        Truth.assertThat(result.from).isEqualTo(from)
+        Truth.assertThat(result.to).isEqualTo(to)
     }
 
     @Test
@@ -196,14 +196,14 @@ class ShamsiRangePickerLogicTest {
             }
 
         // lo%60 == 0, so at boundary hour 8 all minutes are allowed
-        assertThat(minuteRange(8)).isEqualTo(0..59)
+        Truth.assertThat(minuteRange(8)).isEqualTo(0..59)
         // mid-range hour: fully unrestricted
-        assertThat(minuteRange(12)).isEqualTo(0..59)
+        Truth.assertThat(minuteRange(12)).isEqualTo(0..59)
         // hi%60 == 0 means only :00 is allowed at hour 20
-        assertThat(minuteRange(20)).isEqualTo(0..0)
+        Truth.assertThat(minuteRange(20)).isEqualTo(0..0)
         // outside range: unrestricted (hour wheel is disabled anyway)
-        assertThat(minuteRange(7)).isEqualTo(0..59)
-        assertThat(minuteRange(21)).isEqualTo(0..59)
+        Truth.assertThat(minuteRange(7)).isEqualTo(0..59)
+        Truth.assertThat(minuteRange(21)).isEqualTo(0..59)
     }
 
     @Test
@@ -222,10 +222,10 @@ class ShamsiRangePickerLogicTest {
                 0..59
             }
 
-        assertThat(minuteRange(8)).isEqualTo(15..59) // at min hour: starts at :15
-        assertThat(minuteRange(20)).isEqualTo(0..45) // at max hour: ends at :45
-        assertThat(minuteRange(12)).isEqualTo(0..59) // mid: full range
-        assertThat(minuteRange(7)).isEqualTo(0..59) // below min: unrestricted (hour is disabled anyway)
+        Truth.assertThat(minuteRange(8)).isEqualTo(15..59) // at min hour: starts at :15
+        Truth.assertThat(minuteRange(20)).isEqualTo(0..45) // at max hour: ends at :45
+        Truth.assertThat(minuteRange(12)).isEqualTo(0..59) // mid: full range
+        Truth.assertThat(minuteRange(7)).isEqualTo(0..59) // below min: unrestricted (hour is disabled anyway)
     }
 
     @Test
@@ -235,12 +235,12 @@ class ShamsiRangePickerLogicTest {
         val hMin = lo / 60
         val hMax = hi / 60
         val enabledRange = hMin..hMax
-        assertThat(enabledRange.first).isEqualTo(9)
-        assertThat(enabledRange.last).isEqualTo(18)
-        assertThat(enabledRange.contains(8)).isFalse()
-        assertThat(enabledRange.contains(9)).isTrue()
-        assertThat(enabledRange.contains(18)).isTrue()
-        assertThat(enabledRange.contains(19)).isFalse()
+        Truth.assertThat(enabledRange.first).isEqualTo(9)
+        Truth.assertThat(enabledRange.last).isEqualTo(18)
+        Truth.assertThat(enabledRange.contains(8)).isFalse()
+        Truth.assertThat(enabledRange.contains(9)).isTrue()
+        Truth.assertThat(enabledRange.contains(18)).isTrue()
+        Truth.assertThat(enabledRange.contains(19)).isFalse()
     }
 
     // ── "to" minimum live-linked to "from" — date ────────────────────────────
@@ -249,7 +249,7 @@ class ShamsiRangePickerLogicTest {
     fun `effectiveToMin for date is fromDate when no global min is set`() {
         val from = ShamsiDate(1403, 3, 10)
         val effectiveToMin = effectiveDateMin(from, resolvedMin = null)
-        assertThat(effectiveToMin).isEqualTo(from)
+        Truth.assertThat(effectiveToMin).isEqualTo(from)
     }
 
     @Test
@@ -257,7 +257,7 @@ class ShamsiRangePickerLogicTest {
         val from = ShamsiDate(1403, 3, 10)
         val globalMin = ShamsiDate(1403, 1, 1)
         val effectiveToMin = effectiveDateMin(from, resolvedMin = globalMin)
-        assertThat(effectiveToMin).isEqualTo(from)
+        Truth.assertThat(effectiveToMin).isEqualTo(from)
     }
 
     @Test
@@ -265,7 +265,7 @@ class ShamsiRangePickerLogicTest {
         val from = ShamsiDate(1403, 3, 10)
         val globalMin = ShamsiDate(1403, 6, 1)
         val effectiveToMin = effectiveDateMin(from, resolvedMin = globalMin)
-        assertThat(effectiveToMin).isEqualTo(globalMin)
+        Truth.assertThat(effectiveToMin).isEqualTo(globalMin)
     }
 
     @Test
@@ -273,7 +273,7 @@ class ShamsiRangePickerLogicTest {
         val effectiveMin = ShamsiDate(1404, 1, 1)
         var toYear = 1403
         if (toYear < effectiveMin.year) toYear = effectiveMin.year
-        assertThat(toYear).isEqualTo(1404)
+        Truth.assertThat(toYear).isEqualTo(1404)
     }
 
     @Test
@@ -281,7 +281,7 @@ class ShamsiRangePickerLogicTest {
         val effectiveMin = ShamsiDate(1403, 6, 15)
         var toYear = 1403
         if (toYear < effectiveMin.year) toYear = effectiveMin.year
-        assertThat(toYear).isEqualTo(1403)
+        Truth.assertThat(toYear).isEqualTo(1403)
     }
 
     @Test
@@ -289,7 +289,7 @@ class ShamsiRangePickerLogicTest {
         val effectiveMin = ShamsiDate(1403, 6, 15)
         var toYear = 1404
         if (toYear < effectiveMin.year) toYear = effectiveMin.year
-        assertThat(toYear).isEqualTo(1404)
+        Truth.assertThat(toYear).isEqualTo(1404)
     }
 
     @Test
@@ -299,7 +299,7 @@ class ShamsiRangePickerLogicTest {
         var toMonth = 3
         val monthLo = if (toYear == effectiveMin.year) effectiveMin.month else 1
         if (toMonth < monthLo) toMonth = monthLo
-        assertThat(toMonth).isEqualTo(6)
+        Truth.assertThat(toMonth).isEqualTo(6)
     }
 
     @Test
@@ -309,7 +309,7 @@ class ShamsiRangePickerLogicTest {
         var toMonth = 3
         val monthLo = if (toYear == effectiveMin.year) effectiveMin.month else 1
         if (toMonth < monthLo) toMonth = monthLo
-        assertThat(toMonth).isEqualTo(3)
+        Truth.assertThat(toMonth).isEqualTo(3)
     }
 
     @Test
@@ -321,7 +321,7 @@ class ShamsiRangePickerLogicTest {
         val dayLo =
             if (toYear == effectiveMin.year && toMonth == effectiveMin.month) effectiveMin.day else 1
         if (toDay < dayLo) toDay = dayLo
-        assertThat(toDay).isEqualTo(20)
+        Truth.assertThat(toDay).isEqualTo(20)
     }
 
     @Test
@@ -333,7 +333,7 @@ class ShamsiRangePickerLogicTest {
         val dayLo =
             if (toYear == effectiveMin.year && toMonth == effectiveMin.month) effectiveMin.day else 1
         if (toDay < dayLo) toDay = dayLo
-        assertThat(toDay).isEqualTo(5)
+        Truth.assertThat(toDay).isEqualTo(5)
     }
 
     @Test
@@ -351,9 +351,9 @@ class ShamsiRangePickerLogicTest {
             if (toYear == effectiveMin.year && toMonth == effectiveMin.month) effectiveMin.day else 1
         if (toDay < dayLo) toDay = dayLo
 
-        assertThat(toYear).isEqualTo(1404)
-        assertThat(toMonth).isEqualTo(3)
-        assertThat(toDay).isEqualTo(10)
+        Truth.assertThat(toYear).isEqualTo(1404)
+        Truth.assertThat(toMonth).isEqualTo(3)
+        Truth.assertThat(toDay).isEqualTo(10)
     }
 
     // ── "to" minimum live-linked to "from" — time ────────────────────────────
@@ -362,7 +362,7 @@ class ShamsiRangePickerLogicTest {
     fun `effectiveToMin for time is fromTime when no global min is set`() {
         val from = ShamsiTime(10, 30)
         val effectiveToMin = effectiveTimeMin(from, resolvedMin = null)
-        assertThat(effectiveToMin).isEqualTo(from)
+        Truth.assertThat(effectiveToMin).isEqualTo(from)
     }
 
     @Test
@@ -370,7 +370,7 @@ class ShamsiRangePickerLogicTest {
         val from = ShamsiTime(10, 30)
         val globalMin = ShamsiTime(8, 0)
         val effectiveToMin = effectiveTimeMin(from, resolvedMin = globalMin)
-        assertThat(effectiveToMin).isEqualTo(from)
+        Truth.assertThat(effectiveToMin).isEqualTo(from)
     }
 
     @Test
@@ -378,7 +378,7 @@ class ShamsiRangePickerLogicTest {
         val from = ShamsiTime(10, 30)
         val globalMin = ShamsiTime(14, 0)
         val effectiveToMin = effectiveTimeMin(from, resolvedMin = globalMin)
-        assertThat(effectiveToMin).isEqualTo(globalMin)
+        Truth.assertThat(effectiveToMin).isEqualTo(globalMin)
     }
 
     @Test
@@ -386,7 +386,7 @@ class ShamsiRangePickerLogicTest {
         val effectiveMin = ShamsiTime(14, 0)
         var toHour = 10
         if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
-        assertThat(toHour).isEqualTo(14)
+        Truth.assertThat(toHour).isEqualTo(14)
     }
 
     @Test
@@ -394,7 +394,7 @@ class ShamsiRangePickerLogicTest {
         val effectiveMin = ShamsiTime(14, 0)
         var toHour = 16
         if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
-        assertThat(toHour).isEqualTo(16)
+        Truth.assertThat(toHour).isEqualTo(16)
     }
 
     @Test
@@ -405,7 +405,7 @@ class ShamsiRangePickerLogicTest {
         if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
         val mLo = if (toHour == effectiveMin.hour) effectiveMin.minute else 0
         if (toMinute < mLo) toMinute = mLo
-        assertThat(toMinute).isEqualTo(30)
+        Truth.assertThat(toMinute).isEqualTo(30)
     }
 
     @Test
@@ -415,8 +415,8 @@ class ShamsiRangePickerLogicTest {
         var toMinute = 0
         if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
         val mLo = if (toHour == effectiveMin.hour) effectiveMin.minute else 0
-        if (toMinute < mLo) toMinute = mLo
-        assertThat(toMinute).isEqualTo(0)
+        if (0 < mLo) toMinute = mLo
+        Truth.assertThat(toMinute).isEqualTo(0)
     }
 
     @Test
@@ -428,10 +428,10 @@ class ShamsiRangePickerLogicTest {
 
         if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
         val mLo = if (toHour == effectiveMin.hour) effectiveMin.minute else 0
-        if (toMinute < mLo) toMinute = mLo
+        if (0 < mLo) toMinute = mLo
 
-        assertThat(toHour).isEqualTo(15)
-        assertThat(toMinute).isEqualTo(45)
+        Truth.assertThat(toHour).isEqualTo(15)
+        Truth.assertThat(toMinute).isEqualTo(45)
     }
 
     @Test
@@ -446,8 +446,8 @@ class ShamsiRangePickerLogicTest {
         val mLo = if (toHour == effectiveMin.hour) effectiveMin.minute else 0
         if (toMinute < mLo) toMinute = mLo
 
-        assertThat(toHour).isEqualTo(14)
-        assertThat(toMinute).isEqualTo(50)
+        Truth.assertThat(toHour).isEqualTo(14)
+        Truth.assertThat(toMinute).isEqualTo(50)
     }
 
     // ── helpers that mirror the picker's effectiveToMin computation ───────────

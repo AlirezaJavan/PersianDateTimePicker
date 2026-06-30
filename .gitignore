@@ -14,3 +14,4 @@ secring.gpg
 /sample/build/*
 /shamsi-picker/build/*
 /shamsi-picker/schemas/
+/shamsi-core/build/*

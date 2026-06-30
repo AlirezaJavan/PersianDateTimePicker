@@ -12,6 +12,8 @@ import java.time.ZoneId
  * Conversions and helpers for the Shamsi (Jalali / Persian) calendar.
  */
 public object ShamsiCalendar {
+    public val YEAR_RANGE: IntRange = 1200..1600
+
     public val MONTH_NAMES: List<String> =
         listOf(
             "فروردین",
@@ -116,6 +118,49 @@ public object ShamsiCalendar {
         val dateTime = Instant.ofEpochMilli(epochMillis).atZone(zone)
         return fromGregorian(dateTime.toLocalDate())
             .copy(hour = dateTime.hour, minute = dateTime.minute)
+    }
+
+    /** Year/month/day-only ordering key, ignoring the time fields of a [ShamsiDate]. */
+    public fun dateKey(date: ShamsiDate): Int = date.year * 10_000 + date.month * 100 + date.day
+
+    /** Allowed years within [yearRange] given optional date bounds, as wheel indices. */
+    public fun yearEnabledRange(
+        yearRange: IntRange,
+        minDate: ShamsiDate?,
+        maxDate: ShamsiDate?,
+    ): IntRange {
+        val lo = maxOf(yearRange.first, minDate?.year ?: yearRange.first)
+        val hi = minOf(yearRange.last, maxDate?.year ?: yearRange.last)
+        return (lo - yearRange.first)..(hi - yearRange.first)
+    }
+
+    /** Allowed month numbers (1..12) for [year] given optional date bounds. */
+    public fun monthBounds(
+        year: Int,
+        minDate: ShamsiDate?,
+        maxDate: ShamsiDate?,
+    ): IntRange {
+        val lo = if (minDate != null && year == minDate.year) minDate.month else 1
+        val hi = if (maxDate != null && year == maxDate.year) maxDate.month else 12
+        return lo..hi
+    }
+
+    /** Allowed day numbers (1..[maxDay]) for [year]/[month] given optional date bounds. */
+    public fun dayBounds(
+        year: Int,
+        month: Int,
+        maxDay: Int,
+        minDate: ShamsiDate?,
+        maxDate: ShamsiDate?,
+    ): IntRange {
+        val lo = if (minDate != null && year == minDate.year && month == minDate.month) minDate.day else 1
+        val hi =
+            if (maxDate != null && year == maxDate.year && month == maxDate.month) {
+                minOf(maxDate.day, maxDay)
+            } else {
+                maxDay
+            }
+        return lo..hi
     }
 
     // region Jalali integer algorithm

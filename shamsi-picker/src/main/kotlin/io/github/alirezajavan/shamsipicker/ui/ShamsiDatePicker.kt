@@ -39,55 +39,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
+import io.github.alirezajavan.shamsipicker.format.PersianNumber
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateLimit
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
-
-internal val ShamsiYearRange: IntRange = 1200..1600
-
-/** Year/month/day-only ordering key, ignoring the time fields of a [ShamsiDate]. */
-private fun ShamsiDate.dateKey(): Int = year * 10_000 + month * 100 + day
-
-/** Allowed years within [yearRange] given optional date bounds, as wheel indices. */
-internal fun yearEnabledRange(
-    yearRange: IntRange,
-    minDate: ShamsiDate?,
-    maxDate: ShamsiDate?,
-): IntRange {
-    val lo = maxOf(yearRange.first, minDate?.year ?: yearRange.first)
-    val hi = minOf(yearRange.last, maxDate?.year ?: yearRange.last)
-    return (lo - yearRange.first)..(hi - yearRange.first)
-}
-
-/** Allowed month numbers (1..12) for [year] given optional date bounds. */
-internal fun monthBounds(
-    year: Int,
-    minDate: ShamsiDate?,
-    maxDate: ShamsiDate?,
-): IntRange {
-    val lo = if (minDate != null && year == minDate.year) minDate.month else 1
-    val hi = if (maxDate != null && year == maxDate.year) maxDate.month else 12
-    return lo..hi
-}
-
-/** Allowed day numbers (1..[maxDay]) for [year]/[month] given optional date bounds. */
-internal fun dayBounds(
-    year: Int,
-    month: Int,
-    maxDay: Int,
-    minDate: ShamsiDate?,
-    maxDate: ShamsiDate?,
-): IntRange {
-    val lo = if (minDate != null && year == minDate.year && month == minDate.month) minDate.day else 1
-    val hi =
-        if (maxDate != null && year == maxDate.year && month == maxDate.month) {
-            minOf(maxDate.day, maxDay)
-        } else {
-            maxDay
-        }
-    return lo..hi
-}
 
 /**
  * A fully Persian/Shamsi date picker dialog.
@@ -110,12 +66,19 @@ public fun ShamsiDatePickerDialog(
     val resolvedMax = remember(config.maxDate) { config.maxDate?.toShamsiDate() }
 
     var currentStyle by remember { mutableStateOf(config.style) }
-    var year by remember { mutableIntStateOf(initialDate.year.coerceIn(ShamsiYearRange.first, ShamsiYearRange.last)) }
+    var year by remember {
+        mutableIntStateOf(
+            initialDate.year.coerceIn(
+                ShamsiCalendar.YEAR_RANGE.first,
+                ShamsiCalendar.YEAR_RANGE.last,
+            ),
+        )
+    }
     var month by remember { mutableIntStateOf(initialDate.month) }
     var day by remember { mutableIntStateOf(initialDate.day) }
 
     val maxDay = ShamsiCalendar.monthLength(year, month)
-    val days = dayBounds(year, month, maxDay, resolvedMin, resolvedMax)
+    val days = ShamsiCalendar.dayBounds(year, month, maxDay, resolvedMin, resolvedMax)
     if (day > days.last) day = days.last
     if (day < days.first) day = days.first
 
@@ -151,7 +114,13 @@ public fun ShamsiDatePickerDialog(
                     dayBounds = days,
                     minDate = resolvedMin,
                     maxDate = resolvedMax,
-                    onYear = { year = it.coerceIn(ShamsiYearRange.first, ShamsiYearRange.last) },
+                    onYear = {
+                        year =
+                            it.coerceIn(
+                                ShamsiCalendar.YEAR_RANGE.first,
+                                ShamsiCalendar.YEAR_RANGE.last,
+                            )
+                    },
                     onMonth = { month = it },
                     onDay = { day = it },
                 )
@@ -172,8 +141,8 @@ private fun WheelDatePicker(
     onMonth: (Int) -> Unit,
     onDay: (Int) -> Unit,
 ) {
-    val months = monthBounds(year, minDate, maxDate)
-    val days = dayBounds(year, month, maxDay, minDate, maxDate)
+    val months = ShamsiCalendar.monthBounds(year, minDate, maxDate)
+    val days = ShamsiCalendar.dayBounds(year, month, maxDay, minDate, maxDate)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -198,12 +167,12 @@ private fun WheelDatePicker(
             modifier = Modifier.width(116.dp),
         )
         WheelPicker(
-            itemCount = ShamsiYearRange.count(),
-            initialIndex = year - ShamsiYearRange.first,
-            label = { PersianNumber.toPersianDigits((ShamsiYearRange.first + it).toLong()) },
-            onSelectedIndexChange = { onYear(ShamsiYearRange.first + it) },
+            itemCount = ShamsiCalendar.YEAR_RANGE.count(),
+            initialIndex = year - ShamsiCalendar.YEAR_RANGE.first,
+            label = { PersianNumber.toPersianDigits((ShamsiCalendar.YEAR_RANGE.first + it).toLong()) },
+            onSelectedIndexChange = { onYear(ShamsiCalendar.YEAR_RANGE.first + it) },
             infinite = false,
-            enabledRange = yearEnabledRange(ShamsiYearRange, minDate, maxDate),
+            enabledRange = ShamsiCalendar.yearEnabledRange(ShamsiCalendar.YEAR_RANGE, minDate, maxDate),
             modifier = Modifier.width(86.dp),
         )
     }
@@ -224,11 +193,13 @@ private fun CalendarDatePicker(
 ) {
     val afterMin = { y: Int, m: Int ->
         minDate == null ||
-            ShamsiDate(y, m, 1).dateKey() >= ShamsiDate(minDate.year, minDate.month, 1).dateKey()
+            ShamsiCalendar.dateKey(ShamsiDate(y, m, 1)) >=
+            ShamsiCalendar.dateKey(ShamsiDate(minDate.year, minDate.month, 1))
     }
     val beforeMax = { y: Int, m: Int ->
         maxDate == null ||
-            ShamsiDate(y, m, 1).dateKey() <= ShamsiDate(maxDate.year, maxDate.month, 1).dateKey()
+            ShamsiCalendar.dateKey(ShamsiDate(y, m, 1)) <=
+            ShamsiCalendar.dateKey(ShamsiDate(maxDate.year, maxDate.month, 1))
     }
     val prevMonth = if (month == 1) (year - 1) to 12 else year to (month - 1)
     val nextMonth = if (month == 12) (year + 1) to 1 else year to (month + 1)
