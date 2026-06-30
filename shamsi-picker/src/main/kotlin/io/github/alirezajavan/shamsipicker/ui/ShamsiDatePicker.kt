@@ -50,7 +50,7 @@ internal val ShamsiYearRange: IntRange = 1200..1600
 private fun ShamsiDate.dateKey(): Int = year * 10_000 + month * 100 + day
 
 /** Allowed years within [yearRange] given optional date bounds, as wheel indices. */
-private fun yearEnabledRange(
+internal fun yearEnabledRange(
     yearRange: IntRange,
     minDate: ShamsiDate?,
     maxDate: ShamsiDate?,
@@ -61,7 +61,7 @@ private fun yearEnabledRange(
 }
 
 /** Allowed month numbers (1..12) for [year] given optional date bounds. */
-private fun monthBounds(
+internal fun monthBounds(
     year: Int,
     minDate: ShamsiDate?,
     maxDate: ShamsiDate?,
@@ -72,7 +72,7 @@ private fun monthBounds(
 }
 
 /** Allowed day numbers (1..[maxDay]) for [year]/[month] given optional date bounds. */
-private fun dayBounds(
+internal fun dayBounds(
     year: Int,
     month: Int,
     maxDay: Int,
@@ -338,7 +338,7 @@ private fun DayCell(
 }
 
 @Composable
-private fun NavRow(
+internal fun NavRow(
     label: String,
     contentDescriptionPrev: String,
     contentDescriptionNext: String,
@@ -368,7 +368,7 @@ private fun NavRow(
 }
 
 @Composable
-private fun StyleSwitcher(
+internal fun StyleSwitcher(
     selected: ShamsiDatePickerStyle,
     onSelect: (ShamsiDatePickerStyle) -> Unit,
 ) {
