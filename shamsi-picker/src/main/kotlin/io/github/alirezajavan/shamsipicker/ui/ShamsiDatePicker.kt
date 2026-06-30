@@ -37,9 +37,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.github.alirezajavan.shamsipicker.R
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
-import io.github.alirezajavan.shamsipicker.R
 
 /** Visual style for [ShamsiDatePickerDialog]. */
 public enum class ShamsiDatePickerStyle {
@@ -128,7 +128,7 @@ public fun ShamsiDatePickerDialog(
         header = { StyleSwitcher(selected = currentStyle, onSelect = { currentStyle = it }) },
     ) {
         when (currentStyle) {
-            ShamsiDatePickerStyle.Wheel ->
+            ShamsiDatePickerStyle.Wheel -> {
                 WheelDatePicker(
                     year = year,
                     month = month,
@@ -141,8 +141,9 @@ public fun ShamsiDatePickerDialog(
                     onMonth = { month = it },
                     onDay = { day = it },
                 )
+            }
 
-            ShamsiDatePickerStyle.Calendar ->
+            ShamsiDatePickerStyle.Calendar -> {
                 CalendarDatePicker(
                     year = year,
                     month = month,
@@ -155,6 +156,7 @@ public fun ShamsiDatePickerDialog(
                     onMonth = { month = it },
                     onDay = { day = it },
                 )
+            }
         }
     }
 }

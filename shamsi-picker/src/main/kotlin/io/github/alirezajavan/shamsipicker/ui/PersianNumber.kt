@@ -17,7 +17,10 @@ public object PersianNumber {
                 append(
                     when (ch) {
                         in '0'..'9' -> PERSIAN_DIGITS[ch - '0']
-                        in '٠'..'٩' -> PERSIAN_DIGITS[ch - '٠'] // Arabic-Indic digits
+
+                        in '٠'..'٩' -> PERSIAN_DIGITS[ch - '٠']
+
+                        // Arabic-Indic digits
                         else -> ch
                     },
                 )

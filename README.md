@@ -11,6 +11,12 @@ A modern, highly customizable Shamsi (Persian/Jalali) date and time picker libra
 - **Persian Formatting**: Built-in formatters for long/short date and time strings.
 - **Clean Architecture**: Decoupled calendar logic, easily unit-testable.
 
+## Screenshots
+
+| Calendar Style | Wheel Style | Time Picker |
+|:---:|:---:|:---:|
+| <img src="screenshots/datecalendar.png" width="100%"/> | <img src="screenshots/datewheel.png" width="100%"/> | <img src="screenshots/timewheel.png" width="100%"/> |
+
 ## Installation
 
 Add the following to your `build.gradle.kts`:

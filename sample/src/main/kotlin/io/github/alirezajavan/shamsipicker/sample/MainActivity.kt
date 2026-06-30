@@ -48,27 +48,28 @@ fun SampleScreen() {
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(24.dp),
+            modifier =
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = "Shamsi Date & Time Picker",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
                 text = "Selected Date: ${ShamsiDateFormatter.long(selectedDate)}",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
             )
             Text(
                 text = "Selected Time: ${ShamsiDateFormatter.time(selectedDate)}",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -93,7 +94,7 @@ fun SampleScreen() {
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false },
-            style = ShamsiDatePickerStyle.Calendar
+            style = ShamsiDatePickerStyle.Calendar,
         )
     }
 
@@ -105,7 +106,7 @@ fun SampleScreen() {
                 selectedDate = selectedDate.copy(hour = h, minute = m)
                 showTimePicker = false
             },
-            onDismiss = { showTimePicker = false }
+            onDismiss = { showTimePicker = false },
         )
     }
 }
