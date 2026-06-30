@@ -10,7 +10,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 26
         consumerProguardFiles("consumer-rules.pro")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -32,7 +32,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        isCoreLibraryDesugaringEnabled = true
     }
 
     testOptions {
@@ -49,7 +48,6 @@ kotlin {
 
 dependencies {
     api(project(":shamsi-core"))
-    coreLibraryDesugaring(libs.desugarJdkLibs)
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
