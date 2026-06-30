@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.javanapps.shamsipicker.calendar.ShamsiCalendar
-import com.javanapps.shamsipicker.model.ShamsiDate
 import com.javanapps.shamsipicker.ui.ShamsiDateFormatter
 import com.javanapps.shamsipicker.ui.ShamsiDatePickerDialog
 import com.javanapps.shamsipicker.ui.ShamsiDatePickerStyle
