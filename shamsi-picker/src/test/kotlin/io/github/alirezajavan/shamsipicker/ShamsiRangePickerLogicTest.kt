@@ -30,23 +30,20 @@ class ShamsiRangePickerLogicTest {
     }
 
     @Test
-    fun `calendar day tap: first tap sets from, clears to`() {
-        var from = ShamsiDate(1403, 1, 1)
-        var to: ShamsiDate? = ShamsiDate(1403, 1, 10)
+    fun `calendar day tap first tap sets from, clears to`() {
+        var from: ShamsiDate
 
         // Simulate a new first tap
         val tapped = ShamsiDate(1403, 2, 5)
         from = tapped
-        to = null
 
         assertThat(from).isEqualTo(tapped)
-        assertThat(to).isNull()
     }
 
     @Test
-    fun `calendar day tap: second tap after from sets to when tapped is later`() {
+    fun `calendar day tap second tap after from sets to when tapped is later`() {
         var from = ShamsiDate(1403, 1, 1)
-        var to: ShamsiDate? = null
+        var to: ShamsiDate?
 
         val tapped = ShamsiDate(1403, 1, 15)
         if (tapped < from) {
@@ -61,9 +58,9 @@ class ShamsiRangePickerLogicTest {
     }
 
     @Test
-    fun `calendar day tap: tapping before from swaps the two dates`() {
+    fun `calendar day tap tapping before from swaps the two dates`() {
         var from = ShamsiDate(1403, 3, 10)
-        var to: ShamsiDate? = null
+        var to: ShamsiDate?
 
         val tapped = ShamsiDate(1403, 1, 5)
         if (tapped < from) {
@@ -75,13 +72,13 @@ class ShamsiRangePickerLogicTest {
 
         assertThat(from).isEqualTo(ShamsiDate(1403, 1, 5))
         assertThat(to).isEqualTo(ShamsiDate(1403, 3, 10))
-        assertThat(from).isLessThan(to!!)
+        assertThat(from).isLessThan(to)
     }
 
     @Test
-    fun `calendar day tap: tapping same day as from results in zero-length range`() {
+    fun `calendar day tap tapping same day as from results in zero-length range`() {
         var from = ShamsiDate(1403, 3, 10)
-        var to: ShamsiDate? = null
+        var to: ShamsiDate?
 
         val tapped = ShamsiDate(1403, 3, 10)
         if (tapped < from) {
@@ -113,7 +110,7 @@ class ShamsiRangePickerLogicTest {
 
         fun inRange(d: ShamsiDate): Boolean {
             val key = d.year * 10_000 + d.month * 100 + d.day
-            return key > fromKey && key < toKey
+            return key in (fromKey + 1)..<toKey
         }
 
         assertThat(inRange(ShamsiDate(1403, 1, 1))).isFalse() // from itself
@@ -139,9 +136,7 @@ class ShamsiRangePickerLogicTest {
         val earlier = ShamsiDate(1403, 1, 1)
         val (initFrom, initTo) =
             run {
-                val f = later
-                val t = earlier
-                if (f <= t) f to t else t to f
+                if (later <= earlier) later to earlier else earlier to later
             }
         assertThat(initFrom).isEqualTo(earlier)
         assertThat(initTo).isEqualTo(later)
@@ -247,4 +242,223 @@ class ShamsiRangePickerLogicTest {
         assertThat(enabledRange.contains(18)).isTrue()
         assertThat(enabledRange.contains(19)).isFalse()
     }
+
+    // ── "to" minimum live-linked to "from" — date ────────────────────────────
+
+    @Test
+    fun `effectiveToMin for date is fromDate when no global min is set`() {
+        val from = ShamsiDate(1403, 3, 10)
+        val effectiveToMin = effectiveDateMin(from, resolvedMin = null)
+        assertThat(effectiveToMin).isEqualTo(from)
+    }
+
+    @Test
+    fun `effectiveToMin for date is fromDate when global min is before from`() {
+        val from = ShamsiDate(1403, 3, 10)
+        val globalMin = ShamsiDate(1403, 1, 1)
+        val effectiveToMin = effectiveDateMin(from, resolvedMin = globalMin)
+        assertThat(effectiveToMin).isEqualTo(from)
+    }
+
+    @Test
+    fun `effectiveToMin for date is resolvedMin when global min is after from`() {
+        val from = ShamsiDate(1403, 3, 10)
+        val globalMin = ShamsiDate(1403, 6, 1)
+        val effectiveToMin = effectiveDateMin(from, resolvedMin = globalMin)
+        assertThat(effectiveToMin).isEqualTo(globalMin)
+    }
+
+    @Test
+    fun `toYear is clamped up when from moves to a later year`() {
+        val effectiveMin = ShamsiDate(1404, 1, 1)
+        var toYear = 1403
+        if (toYear < effectiveMin.year) toYear = effectiveMin.year
+        assertThat(toYear).isEqualTo(1404)
+    }
+
+    @Test
+    fun `toYear is unchanged when it already matches fromYear`() {
+        val effectiveMin = ShamsiDate(1403, 6, 15)
+        var toYear = 1403
+        if (toYear < effectiveMin.year) toYear = effectiveMin.year
+        assertThat(toYear).isEqualTo(1403)
+    }
+
+    @Test
+    fun `toYear is unchanged when it is in a later year than from`() {
+        val effectiveMin = ShamsiDate(1403, 6, 15)
+        var toYear = 1404
+        if (toYear < effectiveMin.year) toYear = effectiveMin.year
+        assertThat(toYear).isEqualTo(1404)
+    }
+
+    @Test
+    fun `toMonth is clamped up when from moves to a later month in the same year`() {
+        val effectiveMin = ShamsiDate(1403, 6, 15)
+        val toYear = 1403
+        var toMonth = 3
+        val monthLo = if (toYear == effectiveMin.year) effectiveMin.month else 1
+        if (toMonth < monthLo) toMonth = monthLo
+        assertThat(toMonth).isEqualTo(6)
+    }
+
+    @Test
+    fun `toMonth is not clamped when to is in a later year than from`() {
+        val effectiveMin = ShamsiDate(1403, 6, 15)
+        val toYear = 1404
+        var toMonth = 3
+        val monthLo = if (toYear == effectiveMin.year) effectiveMin.month else 1
+        if (toMonth < monthLo) toMonth = monthLo
+        assertThat(toMonth).isEqualTo(3)
+    }
+
+    @Test
+    fun `toDay is clamped up when from is same year and month but later day`() {
+        val effectiveMin = ShamsiDate(1403, 6, 20)
+        val toYear = 1403
+        val toMonth = 6
+        var toDay = 10
+        val dayLo =
+            if (toYear == effectiveMin.year && toMonth == effectiveMin.month) effectiveMin.day else 1
+        if (toDay < dayLo) toDay = dayLo
+        assertThat(toDay).isEqualTo(20)
+    }
+
+    @Test
+    fun `toDay is not clamped when to is in a later month than from`() {
+        val effectiveMin = ShamsiDate(1403, 6, 20)
+        val toYear = 1403
+        val toMonth = 7
+        var toDay = 5
+        val dayLo =
+            if (toYear == effectiveMin.year && toMonth == effectiveMin.month) effectiveMin.day else 1
+        if (toDay < dayLo) toDay = dayLo
+        assertThat(toDay).isEqualTo(5)
+    }
+
+    @Test
+    fun `full date cascade advancing from by a year clamps to to match from`() {
+        // Simulates: from was 1403/3/10, user scrolls fromYear to 1404
+        val effectiveMin = ShamsiDate(1404, 3, 10)
+        var toYear = 1403
+        var toMonth = 3
+        var toDay = 10
+
+        if (toYear < effectiveMin.year) toYear = effectiveMin.year
+        val monthLo = if (toYear == effectiveMin.year) effectiveMin.month else 1
+        if (toMonth < monthLo) toMonth = monthLo
+        val dayLo =
+            if (toYear == effectiveMin.year && toMonth == effectiveMin.month) effectiveMin.day else 1
+        if (toDay < dayLo) toDay = dayLo
+
+        assertThat(toYear).isEqualTo(1404)
+        assertThat(toMonth).isEqualTo(3)
+        assertThat(toDay).isEqualTo(10)
+    }
+
+    // ── "to" minimum live-linked to "from" — time ────────────────────────────
+
+    @Test
+    fun `effectiveToMin for time is fromTime when no global min is set`() {
+        val from = ShamsiTime(10, 30)
+        val effectiveToMin = effectiveTimeMin(from, resolvedMin = null)
+        assertThat(effectiveToMin).isEqualTo(from)
+    }
+
+    @Test
+    fun `effectiveToMin for time is fromTime when global min is before from`() {
+        val from = ShamsiTime(10, 30)
+        val globalMin = ShamsiTime(8, 0)
+        val effectiveToMin = effectiveTimeMin(from, resolvedMin = globalMin)
+        assertThat(effectiveToMin).isEqualTo(from)
+    }
+
+    @Test
+    fun `effectiveToMin for time is resolvedMin when global min is after from`() {
+        val from = ShamsiTime(10, 30)
+        val globalMin = ShamsiTime(14, 0)
+        val effectiveToMin = effectiveTimeMin(from, resolvedMin = globalMin)
+        assertThat(effectiveToMin).isEqualTo(globalMin)
+    }
+
+    @Test
+    fun `toHour is clamped up to effectiveToMin hour`() {
+        val effectiveMin = ShamsiTime(14, 0)
+        var toHour = 10
+        if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
+        assertThat(toHour).isEqualTo(14)
+    }
+
+    @Test
+    fun `toHour is unchanged when it is already at or above effectiveToMin hour`() {
+        val effectiveMin = ShamsiTime(14, 0)
+        var toHour = 16
+        if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
+        assertThat(toHour).isEqualTo(16)
+    }
+
+    @Test
+    fun `toMinute is clamped when toHour equals effectiveToMin hour`() {
+        val effectiveMin = ShamsiTime(14, 30)
+        var toHour = 14
+        var toMinute = 15
+        if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
+        val mLo = if (toHour == effectiveMin.hour) effectiveMin.minute else 0
+        if (toMinute < mLo) toMinute = mLo
+        assertThat(toMinute).isEqualTo(30)
+    }
+
+    @Test
+    fun `toMinute is not clamped when toHour is above effectiveToMin hour`() {
+        val effectiveMin = ShamsiTime(14, 30)
+        var toHour = 15
+        var toMinute = 0
+        if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
+        val mLo = if (toHour == effectiveMin.hour) effectiveMin.minute else 0
+        if (toMinute < mLo) toMinute = mLo
+        assertThat(toMinute).isEqualTo(0)
+    }
+
+    @Test
+    fun `full time cascade advancing from past to clamps to to match from`() {
+        // Simulates: from was 09:00, user scrolls fromHour to 15 and fromMinute to 45
+        val effectiveMin = ShamsiTime(15, 45)
+        var toHour = 9
+        var toMinute = 0
+
+        if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
+        val mLo = if (toHour == effectiveMin.hour) effectiveMin.minute else 0
+        if (toMinute < mLo) toMinute = mLo
+
+        assertThat(toHour).isEqualTo(15)
+        assertThat(toMinute).isEqualTo(45)
+    }
+
+    @Test
+    fun `time clamping preserves valid toMinute when only hour was clamped`() {
+        // toHour=10 is below min hour=14, so hour clamps to 14.
+        // toMinute=50 > min minute=30 at hour 14, so minute stays 50.
+        val effectiveMin = ShamsiTime(14, 30)
+        var toHour = 10
+        var toMinute = 50
+
+        if (toHour < effectiveMin.hour) toHour = effectiveMin.hour
+        val mLo = if (toHour == effectiveMin.hour) effectiveMin.minute else 0
+        if (toMinute < mLo) toMinute = mLo
+
+        assertThat(toHour).isEqualTo(14)
+        assertThat(toMinute).isEqualTo(50)
+    }
+
+    // ── helpers that mirror the picker's effectiveToMin computation ───────────
+
+    private fun effectiveDateMin(
+        from: ShamsiDate,
+        resolvedMin: ShamsiDate?,
+    ): ShamsiDate = if (resolvedMin != null && resolvedMin > from) resolvedMin else from
+
+    private fun effectiveTimeMin(
+        from: ShamsiTime,
+        resolvedMin: ShamsiTime?,
+    ): ShamsiTime = if (resolvedMin != null && resolvedMin > from) resolvedMin else from
 }

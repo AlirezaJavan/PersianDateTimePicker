@@ -2,7 +2,6 @@ package io.github.alirezajavan.shamsipicker.model
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class ShamsiDateRangeTest {
     @Test
