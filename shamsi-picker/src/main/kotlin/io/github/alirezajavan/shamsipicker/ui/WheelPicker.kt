@@ -65,6 +65,7 @@ public fun WheelPicker(
     unselectedColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     disabledColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f),
     fadeColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    dimAlpha: Float = 0.1f,
     content: @Composable (index: Int) -> Unit,
 ) {
     require(itemCount > 0) { "itemCount must be > 0" }
@@ -192,7 +193,7 @@ public fun WheelPicker(
                             Modifier
                                 .fillMaxWidth()
                                 .height(itemHeight)
-                                .wheelTransform(listState, listIndex, half),
+                                .wheelTransform(listState, listIndex, half, dimAlpha),
                         contentAlignment = Alignment.Center,
                     ) {
                         ProvideTextStyle(
@@ -227,6 +228,7 @@ public fun WheelPicker(
     itemHeight: Dp = 44.dp,
     enabledRange: IntRange = 0 until itemCount,
     textStyle: TextStyle = MaterialTheme.typography.titleLarge,
+    dimAlpha: Float = 0.1f,
 ) {
     WheelPicker(
         itemCount = itemCount,
@@ -238,6 +240,7 @@ public fun WheelPicker(
         itemHeight = itemHeight,
         enabledRange = enabledRange,
         textStyle = textStyle,
+        dimAlpha = dimAlpha,
     ) { index ->
         Text(text = label(index), maxLines = 1)
     }
@@ -247,6 +250,7 @@ private fun Modifier.wheelTransform(
     listState: LazyListState,
     index: Int,
     half: Int,
+    dimAlpha: Float,
 ): Modifier =
     graphicsLayer {
         val info = listState.layoutInfo
@@ -256,7 +260,7 @@ private fun Modifier.wheelTransform(
         val rows = ((itemCenter - viewportCenter) / item.size).coerceIn(-half.toFloat(), half.toFloat())
         val t = (abs(rows) / half).coerceIn(0f, 1f)
 
-        alpha = lerp(1f, 0.1f, t)
+        alpha = lerp(1f, dimAlpha, t)
         val scale = lerp(1f, 0.72f, t)
         scaleX = scale
         scaleY = scale
