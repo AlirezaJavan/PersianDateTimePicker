@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
+import io.github.alirezajavan.shamsipicker.format.PersianNumber
 import io.github.alirezajavan.shamsipicker.model.ShamsiTime
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeLimit
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimePickerConfig

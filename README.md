@@ -1,11 +1,19 @@
 # ShamsiPicker
 
 [![Android CI](https://github.com/AlirezaJavan/PersianDateTimePicker/actions/workflows/android.yml/badge.svg)](https://github.com/AlirezaJavan/PersianDateTimePicker/actions/workflows/android.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.alirezajavan/shamsi-picker)](https://central.sonatype.com/artifact/io.github.alirezajavan/shamsi-picker)
+[![Maven Central (Picker)](https://img.shields.io/maven-central/v/io.github.alirezajavan/shamsi-picker?label=shamsi-picker)](https://central.sonatype.com/artifact/io.github.alirezajavan/shamsi-picker)
+[![Maven Central (Core)](https://img.shields.io/maven-central/v/io.github.alirezajavan/shamsi-core?label=shamsi-core)](https://central.sonatype.com/artifact/io.github.alirezajavan/shamsi-core)
 [![API](https://img.shields.io/badge/API-23%2B-brightgreen.svg)](https://android-arsenal.com/api?level=23)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A modern, highly customizable Shamsi (Persian/Jalali) date and time picker library for Jetpack Compose.
+A modern, highly customizable Shamsi (Persian/Jalali) date and time picker library for Jetpack Compose, built on a pure-Kotlin core.
+
+## Project Structure
+
+This project is split into two modules:
+
+- **`shamsi-core`**: A pure-Kotlin/JVM library containing all date logic, calendar conversions, and formatting. It has **zero Android dependencies** and can be used in JVM, KMP, or non-UI layers.
+- **`shamsi-picker`**: The Android library providing **Jetpack Compose** dialogs and UI components. It depends on `shamsi-core`.
 
 ## Features
 
@@ -30,13 +38,22 @@ A modern, highly customizable Shamsi (Persian/Jalali) date and time picker libra
 
 Add the following to your `build.gradle.kts`:
 
+### Android (Compose)
 ```kotlin
 dependencies {
+    // Includes shamsi-core automatically
     implementation("io.github.alirezajavan:shamsi-picker:1.2.0")
 }
 ```
 
-## Usage
+### JVM / Non-UI
+```kotlin
+dependencies {
+    implementation("io.github.alirezajavan:shamsi-core:1.2.0")
+}
+```
+
+## Usage (Compose)
 
 All pickers follow the same pattern: pass callbacks and a config object.
 
@@ -168,18 +185,6 @@ ShamsiDatePickerConfig(
     initialDate = LocalDate.of(2025, 3, 21).asLimit(),
     minDate = ShamsiDate.Now,
 )
-
-// Fixed Shamsi bounds
-ShamsiDatePickerConfig(
-    minDate = ShamsiDate(1400, 1, 1),
-    maxDate = ShamsiDate(1410, 12, 29),
-)
-
-// Mix Gregorian min with Shamsi max
-ShamsiDatePickerConfig(
-    minDate = LocalDate.now().asLimit(),
-    maxDate = ShamsiDate(1410, 12, 29),
-)
 ```
 
 ---
@@ -197,14 +202,6 @@ ShamsiTimePickerConfig(
 #### Examples
 
 ```kotlin
-// Open on current time, no bounds
-ShamsiTimePickerConfig()
-
-// Fixed Shamsi initial time
-ShamsiTimePickerConfig(
-    initialTime = ShamsiTime(9, 0),
-)
-
 // Business hours: 08:30 → 17:00
 ShamsiTimePickerConfig(
     initialTime = ShamsiTime(9, 0),
@@ -216,95 +213,29 @@ ShamsiTimePickerConfig(
 ShamsiTimePickerConfig(
     maxTime = ShamsiTimeLimit.Now,
 )
-
-// Gregorian bounds
-ShamsiTimePickerConfig(
-    minTime = LocalTime.of(8, 0).asLimit(),
-    maxTime = LocalTime.of(20, 0).asLimit(),
-)
 ```
 
 ---
 
-### `ShamsiDateRangePickerConfig`
+## Core API
+
+### Formatting
 
 ```kotlin
-ShamsiDateRangePickerConfig(
-    initialFrom: ShamsiDateLimit = ShamsiDate.Now,
-    initialTo: ShamsiDateLimit = ShamsiDate.Now,
-    minDate: ShamsiDateLimit? = null,
-    maxDate: ShamsiDateLimit? = null,
-    style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
-)
-```
+import io.github.alirezajavan.shamsipicker.format.ShamsiDateFormatter
 
-The returned `ShamsiDateRange(from, to)` always has `from ≤ to`. In Wheel mode the "to" wheels are live-constrained so the user cannot select a "to" earlier than the current "from".
-
-#### Examples
-
-```kotlin
-// Default: both wheels open on today
-ShamsiDateRangePickerConfig()
-
-// Calendar style, fixed initial range
-ShamsiDateRangePickerConfig(
-    initialFrom = ShamsiDate(1403, 1, 1),
-    initialTo = ShamsiDate(1403, 3, 31),
-    style = ShamsiDatePickerStyle.Calendar,
-)
-
-// Wheel style, restricted to the next 90 days
-ShamsiDateRangePickerConfig(
-    minDate = ShamsiDate.Now,
-    maxDate = LocalDate.now().plusDays(90).asLimit(),
-)
-```
-
----
-
-### `ShamsiTimeRangePickerConfig`
-
-```kotlin
-ShamsiTimeRangePickerConfig(
-    initialFrom: ShamsiTimeLimit = ShamsiTime.Now,
-    initialTo: ShamsiTimeLimit = ShamsiTime.Now,
-    minTime: ShamsiTimeLimit? = null,
-    maxTime: ShamsiTimeLimit? = null,
-)
-```
-
-The returned `ShamsiTimeRange(from, to)` always has `from ≤ to`. The "to" wheel is live-constrained to always be ≥ the current "from".
-
-#### Examples
-
-```kotlin
-// Default: both wheels open on the current time
-ShamsiTimeRangePickerConfig()
-
-// Business hours window: 08:00 → 18:00, open at 09:00–17:00
-ShamsiTimeRangePickerConfig(
-    initialFrom = ShamsiTime(9, 0),
-    initialTo = ShamsiTime(17, 0),
-    minTime = ShamsiTime(8, 0),
-    maxTime = ShamsiTime(18, 0),
-)
-```
-
----
-
-## Formatting
-
-```kotlin
 val longDate = ShamsiDateFormatter.long(selectedDate)   // چهارشنبه ۱ فروردین ۱۴۰۳
 val shortDate = ShamsiDateFormatter.short(selectedDate) // ۱۴۰۳/۰۱/۰۱
 val time = ShamsiDateFormatter.time(selectedDate)       // ۱۳:۴۵
 ```
 
-## Date Conversion
+### Date Conversion
 
 Easily convert between Gregorian `java.time.LocalDate` and `ShamsiDate`.
 
 ```kotlin
+import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
+
 // Gregorian to Shamsi
 val shamsi = ShamsiCalendar.fromGregorian(LocalDate.now())
 

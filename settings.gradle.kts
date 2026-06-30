@@ -23,5 +23,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ShamsiPicker"
+include(":shamsi-core")
 include(":shamsi-picker")
 include(":sample")

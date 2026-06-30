@@ -1,4 +1,4 @@
-package io.github.alirezajavan.shamsipicker.ui
+package io.github.alirezajavan.shamsipicker.format
 
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
 import io.github.alirezajavan.shamsipicker.model.MonthKey

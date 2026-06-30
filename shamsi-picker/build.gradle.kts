@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.maven.publish)
     alias(libs.plugins.dokka)
@@ -49,9 +48,8 @@ kotlin {
 }
 
 dependencies {
+    api(project(":shamsi-core"))
     coreLibraryDesugaring(libs.desugarJdkLibs)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.kotlinx.serialization.json)
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
