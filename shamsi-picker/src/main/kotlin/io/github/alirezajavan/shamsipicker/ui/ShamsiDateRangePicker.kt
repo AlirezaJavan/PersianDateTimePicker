@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,10 +26,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
@@ -43,9 +49,10 @@ private fun ShamsiDate.dateKey(): Int = year * 10_000 + month * 100 + day
  * A fully Persian/Shamsi date range picker dialog for selecting a "from" and "to" date.
  *
  * In [ShamsiDatePickerStyle.Calendar] mode the user first taps to set the start date, then taps
- * again to set the end date. The selected range is highlighted in the grid. Tapping once more
- * starts a new selection. In [ShamsiDatePickerStyle.Wheel] mode two compact wheel drums are
- * displayed — one for "از" (from) and one for "تا" (to).
+ * again to set the end date. The selected range is highlighted with a colored strip connecting
+ * the two endpoints. Tapping a third time starts a new selection.
+ * In [ShamsiDatePickerStyle.Wheel] mode two compact wheel drums are displayed stacked vertically —
+ * one labeled "تاریخ شروع" (from) and one "تاریخ پایان" (to).
  */
 @Composable
 public fun ShamsiDateRangePickerDialog(
@@ -72,7 +79,7 @@ public fun ShamsiDateRangePickerDialog(
     var toMonth by remember { mutableIntStateOf(initTo.month) }
     var toDay by remember { mutableIntStateOf(initTo.day) }
 
-    // Clamp days to valid range whenever month/year changes (same pattern as ShamsiDatePickerDialog)
+    // Clamp days to valid bounds after month/year changes
     val fromMaxDay = ShamsiCalendar.monthLength(fromYear, fromMonth)
     val fromDayBounds = dayBounds(fromYear, fromMonth, fromMaxDay, resolvedMin, resolvedMax)
     if (fromDay > fromDayBounds.last) fromDay = fromDayBounds.last
@@ -83,8 +90,7 @@ public fun ShamsiDateRangePickerDialog(
     if (toDay > toDayBounds.last) toDay = toDayBounds.last
     if (toDay < toDayBounds.first) toDay = toDayBounds.first
 
-    // Calendar mode state
-    // fromDate is always set; toDate==null means the user is currently picking "to"
+    // Calendar mode state: toDate==null means the user is picking "to" next
     var fromDate by remember { mutableStateOf(initFrom) }
     var toDate by remember { mutableStateOf<ShamsiDate?>(initTo) }
     var viewYear by remember { mutableIntStateOf(initFrom.year) }
@@ -149,11 +155,9 @@ public fun ShamsiDateRangePickerDialog(
                     onDayTap = { day ->
                         val tapped = ShamsiDate(viewYear, viewMonth, day)
                         if (toDate != null) {
-                            // Both were already set — start a new selection
                             fromDate = tapped
                             toDate = null
                         } else {
-                            // Setting the end date
                             if (tapped < fromDate) {
                                 toDate = fromDate
                                 fromDate = tapped
@@ -193,9 +197,9 @@ private fun WheelDateRangePicker(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        RangeRowLabel(stringResource(R.string.shamsi_date_range_picker_from))
+        RangeLabel(stringResource(R.string.shamsi_date_range_picker_from))
         CompactWheelDateRow(
             year = fromYear,
             month = fromMonth,
@@ -208,8 +212,8 @@ private fun WheelDateRangePicker(
             onMonth = onFromMonth,
             onDay = onFromDay,
         )
-        HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
-        RangeRowLabel(stringResource(R.string.shamsi_date_range_picker_to))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        RangeLabel(stringResource(R.string.shamsi_date_range_picker_to))
         CompactWheelDateRow(
             year = toYear,
             month = toMonth,
@@ -352,7 +356,8 @@ private fun CalendarDateRangePicker(
             ShamsiCalendar.WEEKDAY_NAMES.indexOf(ShamsiCalendar.weekdayName(ShamsiDate(viewYear, viewMonth, 1)))
         val cells = firstWeekday + maxDay
         val rows = (cells + 6) / 7
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+        // No row spacing: the strip (38dp) in each 44dp cell provides natural visual separation.
+        Column(modifier = Modifier.fillMaxWidth()) {
             for (row in 0 until rows) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     for (col in 0 until 7) {
@@ -360,11 +365,14 @@ private fun CalendarDateRangePicker(
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                             if (dayNumber in 1..maxDay) {
                                 val cellKey = ShamsiDate(viewYear, viewMonth, dayNumber).dateKey()
+                                val isFrom = cellKey == fromKey
+                                val isTo = toKey != null && cellKey == toKey
+                                val isInRange = toKey != null && cellKey > fromKey && cellKey < toKey
                                 RangeDayCell(
                                     day = dayNumber,
-                                    isFrom = cellKey == fromKey,
-                                    isTo = toKey != null && cellKey == toKey,
-                                    isInRange = toKey != null && cellKey > fromKey && cellKey < toKey,
+                                    isFrom = isFrom,
+                                    isTo = isTo,
+                                    isInRange = isInRange,
                                     enabled = dayNumber in days,
                                     onClick = { onDayTap(dayNumber) },
                                 )
@@ -385,6 +393,16 @@ private fun CalendarDateRangePicker(
     }
 }
 
+/**
+ * A calendar day cell that renders a colored "rope" strip connecting the selected range.
+ *
+ * The strip is drawn behind the circle and respects layout direction:
+ * - LTR: "from" → right half (strip flows toward "to" on the right);
+ *         "to" → left half (strip comes from "from" on the left)
+ * - RTL: directions are mirrored — "from" → left half, "to" → right half
+ * - In-range days: full-width fill
+ * - Same-day range: only the circle, no strip
+ */
 @Composable
 private fun RangeDayCell(
     day: Int,
@@ -394,44 +412,92 @@ private fun RangeDayCell(
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
+    val primary = MaterialTheme.colorScheme.primary
+    val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val rangeColor = primary.copy(alpha = 0.15f)
+    val sameDay = isFrom && isTo
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
     val circleColor by animateColorAsState(
-        if (isFrom || isTo) MaterialTheme.colorScheme.primary else Color.Transparent,
+        if (isFrom || isTo) primary else Color.Transparent,
         label = "rangeDayCircle",
     )
-    val rangeBackground = if (isInRange) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent
+
     Box(
         modifier =
             Modifier
-                .padding(2.dp)
-                .size(38.dp)
-                .background(rangeBackground)
-                .clip(CircleShape)
-                .background(circleColor)
-                .clickable(enabled = enabled, onClick = onClick),
+                .height(44.dp)
+                .fillMaxWidth()
+                .drawBehind {
+                    if (!sameDay) {
+                        val stripH = 38.dp.toPx()
+                        val stripTop = (size.height - stripH) / 2f
+                        val half = size.width / 2f
+                        // In LTR "from" is earlier (left side) so its strip extends right toward "to".
+                        // In RTL the physical sides are mirrored.
+                        val fromStripX = if (isRtl) 0f else half
+                        val toStripX = if (isRtl) half else 0f
+                        when {
+                            isInRange -> {
+                                drawRect(
+                                    color = rangeColor,
+                                    topLeft = Offset(0f, stripTop),
+                                    size = Size(size.width, stripH),
+                                )
+                            }
+
+                            isFrom -> {
+                                drawRect(
+                                    color = rangeColor,
+                                    topLeft = Offset(fromStripX, stripTop),
+                                    size = Size(half, stripH),
+                                )
+                            }
+
+                            isTo -> {
+                                drawRect(
+                                    color = rangeColor,
+                                    topLeft = Offset(toStripX, stripTop),
+                                    size = Size(half, stripH),
+                                )
+                            }
+                        }
+                    }
+                }.clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = PersianNumber.toPersianDigits(day.toLong()),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (isFrom || isTo) FontWeight.Bold else FontWeight.Normal,
-            color =
-                when {
-                    isFrom || isTo -> MaterialTheme.colorScheme.onPrimary
-                    !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f)
-                    isInRange -> MaterialTheme.colorScheme.primary
-                    else -> MaterialTheme.colorScheme.onSurface
-                },
-        )
+        Box(
+            modifier =
+                Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(circleColor),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = PersianNumber.toPersianDigits(day.toLong()),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (isFrom || isTo) FontWeight.Bold else FontWeight.Normal,
+                color =
+                    when {
+                        isFrom || isTo -> onPrimary
+                        !enabled -> onSurface.copy(alpha = 0.22f)
+                        isInRange -> primary
+                        else -> onSurface
+                    },
+            )
+        }
     }
 }
 
+/** Section label for wheel range rows — right-aligned via natural RTL text direction. */
 @Composable
-private fun RangeRowLabel(text: String) {
+private fun RangeLabel(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelMedium,
+        style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.End,
     )
 }

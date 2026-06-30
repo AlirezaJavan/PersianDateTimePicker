@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
@@ -68,12 +67,14 @@ public fun ShamsiTimeRangePickerDialog(
             if (from <= to) onConfirm(ShamsiTimeRange(from, to)) else onConfirm(ShamsiTimeRange(to, from))
         },
     ) {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                TimeRangeLabel(stringResource(R.string.shamsi_time_range_picker_from))
+        // Labels are in the device's natural RTL context so Persian text sits on the right.
+        // Only the wheel rows are forced to LTR (to keep H:M column order consistent).
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            TimeRangeLabel(stringResource(R.string.shamsi_time_range_picker_from))
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 TimeWheelRow(
                     initialHour = initFrom.hour,
                     initialMinute = initFrom.minute,
@@ -83,8 +84,10 @@ public fun ShamsiTimeRangePickerDialog(
                     onHourChange = { fromHour = it },
                     onMinuteChange = { fromMinute = it },
                 )
-                HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
-                TimeRangeLabel(stringResource(R.string.shamsi_time_range_picker_to))
+            }
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            TimeRangeLabel(stringResource(R.string.shamsi_time_range_picker_to))
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 TimeWheelRow(
                     initialHour = initTo.hour,
                     initialMinute = initTo.minute,
@@ -220,13 +223,13 @@ private fun TimeWheelRow(
     }
 }
 
+/** Section label for wheel range rows — right-aligned via natural RTL text direction. */
 @Composable
 private fun TimeRangeLabel(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelMedium,
+        style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Start,
     )
 }
