@@ -30,6 +30,7 @@ import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRangePickerConfig
 
 private const val RANGE_MINUTES_PER_DAY: Int = 24 * 60
+private const val RANGE_TIME_WHEEL_DIM_ALPHA = 0.4f
 
 /**
  * An iOS-style Shamsi time range picker dialog for selecting a "from" and "to" time.
@@ -56,6 +57,20 @@ public fun ShamsiTimeRangePickerDialog(
     var toHour by remember { mutableIntStateOf(initTo.hour) }
     var toMinute by remember { mutableIntStateOf(initTo.minute) }
 
+    // "to" must always be >= "from": derive an effective minimum for the "to" wheel
+    val fromAsTime = ShamsiTime(fromHour, fromMinute)
+    val effectiveToMin: ShamsiTime =
+        if (resolvedMin != null && resolvedMin > fromAsTime) resolvedMin else fromAsTime
+
+    val toHMin = effectiveToMin.hour
+    val toHMax = resolvedMax?.hour ?: 23
+    if (toHour < toHMin) toHour = toHMin
+    if (toHour > toHMax) toHour = toHMax
+    val toMlo = if (toHour == toHMin) effectiveToMin.minute else 0
+    val toMhi = if (resolvedMax != null && toHour == toHMax) resolvedMax.minute else 59
+    if (toMinute < toMlo) toMinute = toMlo
+    if (toMinute > toMhi) toMinute = toMhi
+
     PickerDialogScaffold(
         title = stringResource(R.string.shamsi_time_range_picker_title),
         confirmText = stringResource(R.string.shamsi_time_picker_confirm),
@@ -73,7 +88,6 @@ public fun ShamsiTimeRangePickerDialog(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            TimeRangeLabel(stringResource(R.string.shamsi_time_range_picker_from))
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 TimeWheelRow(
                     initialHour = initFrom.hour,
@@ -86,13 +100,12 @@ public fun ShamsiTimeRangePickerDialog(
                 )
             }
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            TimeRangeLabel(stringResource(R.string.shamsi_time_range_picker_to))
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 TimeWheelRow(
                     initialHour = initTo.hour,
                     initialMinute = initTo.minute,
                     is24h = is24h,
-                    minTime = resolvedMin,
+                    minTime = effectiveToMin,
                     maxTime = resolvedMax,
                     onHourChange = { toHour = it },
                     onMinuteChange = { toMinute = it },
@@ -152,6 +165,7 @@ private fun TimeWheelRow(
                 },
                 enabledRange = hMin..hMax,
                 visibleCount = 3,
+                dimAlpha = RANGE_TIME_WHEEL_DIM_ALPHA,
                 modifier = Modifier.width(72.dp),
             )
         } else {
@@ -171,6 +185,7 @@ private fun TimeWheelRow(
                 },
                 enabledRange = hourEnabled,
                 visibleCount = 3,
+                dimAlpha = RANGE_TIME_WHEEL_DIM_ALPHA,
                 modifier = Modifier.width(64.dp),
             )
         }
@@ -192,6 +207,7 @@ private fun TimeWheelRow(
             },
             enabledRange = minuteRange,
             visibleCount = 3,
+            dimAlpha = RANGE_TIME_WHEEL_DIM_ALPHA,
             modifier = Modifier.width(64.dp),
         )
 
@@ -216,20 +232,10 @@ private fun TimeWheelRow(
                     infinite = false,
                     enabledRange = amPmEnabled,
                     visibleCount = 3,
+                    dimAlpha = RANGE_TIME_WHEEL_DIM_ALPHA,
                     textStyle = MaterialTheme.typography.titleMedium,
                 )
             }
         }
     }
-}
-
-/** Section label for wheel range rows — right-aligned via natural RTL text direction. */
-@Composable
-private fun TimeRangeLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.fillMaxWidth(),
-    )
 }

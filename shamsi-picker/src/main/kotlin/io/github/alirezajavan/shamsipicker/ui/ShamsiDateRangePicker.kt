@@ -45,6 +45,8 @@ import io.github.alirezajavan.shamsipicker.model.ShamsiDateRangePickerConfig
 
 private fun ShamsiDate.dateKey(): Int = year * 10_000 + month * 100 + day
 
+private const val RANGE_WHEEL_DIM_ALPHA = 0.4f
+
 /**
  * A fully Persian/Shamsi date range picker dialog for selecting a "from" and "to" date.
  *
@@ -79,14 +81,26 @@ public fun ShamsiDateRangePickerDialog(
     var toMonth by remember { mutableIntStateOf(initTo.month) }
     var toDay by remember { mutableIntStateOf(initTo.day) }
 
-    // Clamp days to valid bounds after month/year changes
+    // Clamp "from" to global bounds
     val fromMaxDay = ShamsiCalendar.monthLength(fromYear, fromMonth)
     val fromDayBounds = dayBounds(fromYear, fromMonth, fromMaxDay, resolvedMin, resolvedMax)
     if (fromDay > fromDayBounds.last) fromDay = fromDayBounds.last
     if (fromDay < fromDayBounds.first) fromDay = fromDayBounds.first
 
+    // "to" must always be >= "from": derive an effective minimum for the "to" wheels
+    val fromAsDate = ShamsiDate(fromYear, fromMonth, fromDay)
+    val effectiveToMin: ShamsiDate =
+        if (resolvedMin != null && resolvedMin > fromAsDate) resolvedMin else fromAsDate
+
+    val effectiveToMinYear = effectiveToMin.year.coerceIn(ShamsiYearRange)
+    if (toYear < effectiveToMinYear) toYear = effectiveToMinYear
+
+    val toMonthBounds = monthBounds(toYear, effectiveToMin, resolvedMax)
+    if (toMonth < toMonthBounds.first) toMonth = toMonthBounds.first
+    if (toMonth > toMonthBounds.last) toMonth = toMonthBounds.last
+
     val toMaxDay = ShamsiCalendar.monthLength(toYear, toMonth)
-    val toDayBounds = dayBounds(toYear, toMonth, toMaxDay, resolvedMin, resolvedMax)
+    val toDayBounds = dayBounds(toYear, toMonth, toMaxDay, effectiveToMin, resolvedMax)
     if (toDay > toDayBounds.last) toDay = toDayBounds.last
     if (toDay < toDayBounds.first) toDay = toDayBounds.first
 
@@ -133,8 +147,9 @@ public fun ShamsiDateRangePickerDialog(
                     toDay = toDay,
                     toMaxDay = toMaxDay,
                     toDayBounds = toDayBounds,
-                    minDate = resolvedMin,
+                    fromMinDate = resolvedMin,
                     maxDate = resolvedMax,
+                    toMinDate = effectiveToMin,
                     onFromYear = { fromYear = it },
                     onFromMonth = { fromMonth = it },
                     onFromDay = { fromDay = it },
@@ -186,8 +201,9 @@ private fun WheelDateRangePicker(
     toDay: Int,
     toMaxDay: Int,
     toDayBounds: IntRange,
-    minDate: ShamsiDate?,
+    fromMinDate: ShamsiDate?,
     maxDate: ShamsiDate?,
+    toMinDate: ShamsiDate,
     onFromYear: (Int) -> Unit,
     onFromMonth: (Int) -> Unit,
     onFromDay: (Int) -> Unit,
@@ -199,28 +215,26 @@ private fun WheelDateRangePicker(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        RangeLabel(stringResource(R.string.shamsi_date_range_picker_from))
         CompactWheelDateRow(
             year = fromYear,
             month = fromMonth,
             day = fromDay,
             maxDay = fromMaxDay,
             dayBounds = fromDayBounds,
-            minDate = minDate,
+            minDate = fromMinDate,
             maxDate = maxDate,
             onYear = onFromYear,
             onMonth = onFromMonth,
             onDay = onFromDay,
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        RangeLabel(stringResource(R.string.shamsi_date_range_picker_to))
         CompactWheelDateRow(
             year = toYear,
             month = toMonth,
             day = toDay,
             maxDay = toMaxDay,
             dayBounds = toDayBounds,
-            minDate = minDate,
+            minDate = toMinDate,
             maxDate = maxDate,
             onYear = onToYear,
             onMonth = onToMonth,
@@ -256,6 +270,7 @@ private fun CompactWheelDateRow(
                 onSelectedIndexChange = { onDay(it + 1) },
                 enabledRange = (dayBounds.first - 1)..<dayBounds.last,
                 visibleCount = 3,
+                dimAlpha = RANGE_WHEEL_DIM_ALPHA,
                 modifier = Modifier.width(64.dp),
             )
         }
@@ -266,6 +281,7 @@ private fun CompactWheelDateRow(
             onSelectedIndexChange = { onMonth(it + 1) },
             enabledRange = (months.first - 1)..<months.last,
             visibleCount = 3,
+            dimAlpha = RANGE_WHEEL_DIM_ALPHA,
             modifier = Modifier.width(116.dp),
         )
         WheelPicker(
@@ -276,6 +292,7 @@ private fun CompactWheelDateRow(
             infinite = false,
             enabledRange = yearEnabledRange(ShamsiYearRange, minDate, maxDate),
             visibleCount = 3,
+            dimAlpha = RANGE_WHEEL_DIM_ALPHA,
             modifier = Modifier.width(86.dp),
         )
     }
@@ -489,15 +506,4 @@ private fun RangeDayCell(
             )
         }
     }
-}
-
-/** Section label for wheel range rows — right-aligned via natural RTL text direction. */
-@Composable
-private fun RangeLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.fillMaxWidth(),
-    )
 }

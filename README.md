@@ -18,9 +18,11 @@ A modern, highly customizable Shamsi (Persian/Jalali) date and time picker libra
 
 ## Screenshots
 
-| Calendar Style | Wheel Style | Time Picker |
-|:---:|:---:|:---:|
-| <img src="screenshots/datecalendar.png" width="100%"/> | <img src="screenshots/datewheel.png" width="100%"/> | <img src="screenshots/timewheel.png" width="100%"/> |
+|                       Calendar Style                        |                       Wheel Style                        |                       Time Picker                        |
+|:-----------------------------------------------------------:|:--------------------------------------------------------:|:--------------------------------------------------------:|
+|   <img src="screenshots/datecalendar.png" width="100%"/>    |   <img src="screenshots/datewheel.png" width="100%"/>    |   <img src="screenshots/timewheel.png" width="100%"/>    |
+|                            :---:                            |                          :---:                           |                          :---:                           |
+| <img src="screenshots/daterangecalendar.png" width="100%"/> | <img src="screenshots/daterangewheel.png" width="100%"/> | <img src="screenshots/timerangewheel.png" width="100%"/> |
 
 ## Installation
 
@@ -28,7 +30,7 @@ Add the following to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("io.github.alirezajavan:shamsi-picker:1.0.0")
+    implementation("io.github.alirezajavan:shamsi-picker:1.2.0")
 }
 ```
 
