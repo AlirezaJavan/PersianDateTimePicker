@@ -4,7 +4,7 @@
 [![Maven Central (Picker)](https://img.shields.io/maven-central/v/io.github.alirezajavan/shamsi-picker?label=shamsi-picker)](https://central.sonatype.com/artifact/io.github.alirezajavan/shamsi-picker)
 [![Maven Central (Core)](https://img.shields.io/maven-central/v/io.github.alirezajavan/shamsi-core?label=shamsi-core)](https://central.sonatype.com/artifact/io.github.alirezajavan/shamsi-core)
 [![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)](https://android-arsenal.com/api?level=26)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 A modern, highly customizable Shamsi (Persian/Jalali) date and time picker library for Jetpack Compose, built on a pure-Kotlin core.
 
@@ -245,4 +245,4 @@ val gregorian = ShamsiCalendar.toGregorian(shamsi)
 
 ## License
 
-MIT License
+Apache License 2.0
