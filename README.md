@@ -27,6 +27,7 @@ This project is split into two modules:
 - **Customizable Week Start**: Configure the first day of the week (defaults to Saturday for Shamsi, Sunday for Gregorian).
 - **Leap Year Aware**: Automatically handles 29/30 day Esfand and Feb 29.
 - **Persian & Latin Formatting**: Built-in formatters for long/short date and time strings.
+- **Theming & Text Customization**: Restyle colors, typography (including custom fonts), and re-word the title/buttons/labels of every dialog via `ShamsiPickerColors`, `ShamsiPickerTypography`, and `ShamsiPickerStrings` — no forking required.
 
 ## Screenshots
 
@@ -218,6 +219,55 @@ ShamsiTimePickerConfig(
     maxTime = ShamsiTimeLimit.Now,
 )
 ```
+
+---
+
+## Theming
+
+Every dialog (`ShamsiDatePickerDialog`, `ShamsiDateRangePickerDialog`,
+`ShamsiTimePickerDialog`, `ShamsiTimeRangePickerDialog`) accepts three optional
+parameters — `colors`, `typography`, and `strings` — alongside `config`. Each
+defaults to the current `MaterialTheme` / localized resources, so existing call
+sites keep working unchanged.
+
+```kotlin
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerDefaults
+
+ShamsiDatePickerDialog(
+    onConfirm = { /* ... */ },
+    onDismiss = { /* ... */ },
+    colors =
+        ShamsiPickerDefaults.colors(
+            accentColor = Color(0xFF6750A4),
+            onAccentColor = Color.White,
+            titleColor = Color(0xFF6750A4),
+        ),
+    typography =
+        ShamsiPickerDefaults.typography().let { defaults ->
+            defaults.copy(titleStyle = defaults.titleStyle.copy(fontFamily = FontFamily.Serif))
+        },
+    strings =
+        ShamsiPickerDefaults.dateStrings(
+            title = "Pick a day",
+            confirmText = "Done",
+            cancelText = "Nevermind",
+        ),
+)
+```
+
+- **`ShamsiPickerColors`** — text/accent/dialog/button colors. Build one with
+  `ShamsiPickerDefaults.colors(...)`, overriding only what you need.
+- **`ShamsiPickerTypography`** — a `TextStyle` per role (title, wheel item, day
+  cell, weekday label, nav header, etc.). Set a custom font by putting a
+  `FontFamily` on the style you pass in — there's no separate "font" parameter.
+- **`ShamsiPickerStrings`** — one data class per dialog
+  (`ShamsiDatePickerStrings`, `ShamsiDateRangePickerStrings`,
+  `ShamsiTimePickerStrings`, `ShamsiTimeRangePickerStrings`) covering the title,
+  confirm/cancel button text, and dialog-specific labels. Independent of
+  `calendarType` and device locale — set English text on a Shamsi-calendar
+  picker, or vice versa.
+
+See the sample app's "Theming" section for a live default-vs-custom comparison.
 
 ---
 

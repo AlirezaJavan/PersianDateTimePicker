@@ -1,4 +1,4 @@
-package io.github.alirezajavan.shamsipicker.ui
+﻿package io.github.alirezajavan.shamsipicker.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -19,7 +19,6 @@ import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,11 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.alirezajavan.shamsipicker.R
 import io.github.alirezajavan.shamsipicker.calendar.CalendarSystem
 import io.github.alirezajavan.shamsipicker.format.NumberFormatter
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
@@ -45,18 +42,27 @@ import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
 import io.github.alirezajavan.shamsipicker.model.fromSystem
 import io.github.alirezajavan.shamsipicker.model.toSystem
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiDatePickerStrings
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerColors
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerDefaults
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerDimens
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerTypography
 
 /**
  * A date picker dialog supporting both Shamsi and Gregorian calendars.
  *
  * Use [ShamsiDatePickerConfig] to set the initial date, optional date bounds,
- * display style, and calendar type.
+ * display style, and calendar type. Use [colors], [typography], and [strings] to
+ * restyle or re-word the dialog without forking it.
  */
 @Composable
 public fun ShamsiDatePickerDialog(
     onConfirm: (ShamsiDate) -> Unit,
     onDismiss: () -> Unit,
     config: ShamsiDatePickerConfig = ShamsiDatePickerConfig(),
+    colors: ShamsiPickerColors = ShamsiPickerDefaults.colors(),
+    typography: ShamsiPickerTypography = ShamsiPickerDefaults.typography(),
+    strings: ShamsiDatePickerStrings = ShamsiPickerDefaults.dateStrings(),
 ) {
     val calendarSystem = remember(config.calendarType) { config.calendarType.system }
     val initialDate =
@@ -96,15 +102,26 @@ public fun ShamsiDatePickerDialog(
     if (day < days.first) day = days.first
 
     PickerDialogScaffold(
-        title = stringResource(R.string.shamsi_date_picker_title),
-        confirmText = stringResource(R.string.shamsi_date_picker_confirm),
-        cancelText = stringResource(R.string.shamsi_date_picker_cancel),
+        title = strings.title,
+        confirmText = strings.confirmText,
+        cancelText = strings.cancelText,
         onCancel = onDismiss,
         onConfirm = {
             val result = ShamsiDate(year, month, day, initialDate.hour, initialDate.minute)
             onConfirm(result.fromSystem(calendarSystem))
         },
-        header = { StyleSwitcher(selected = currentStyle, onSelect = { currentStyle = it }) },
+        colors = colors,
+        typography = typography,
+        header = {
+            StyleSwitcher(
+                selected = currentStyle,
+                onSelect = { currentStyle = it },
+                colors = colors,
+                typography = typography,
+                wheelLabel = strings.styleWheelLabel,
+                calendarLabel = strings.styleCalendarLabel,
+            )
+        },
     ) {
         when (currentStyle) {
             ShamsiDatePickerStyle.Wheel -> {
@@ -117,6 +134,8 @@ public fun ShamsiDatePickerDialog(
                     maxDate = resolvedMax,
                     calendarSystem = calendarSystem,
                     numberFormatter = numberFormatter,
+                    colors = colors,
+                    typography = typography,
                     onYear = { year = it },
                     onMonth = { month = it },
                     onDay = { day = it },
@@ -135,6 +154,9 @@ public fun ShamsiDatePickerDialog(
                     calendarSystem = calendarSystem,
                     numberFormatter = numberFormatter,
                     firstDayOfWeek = firstDayOfWeek,
+                    colors = colors,
+                    typography = typography,
+                    strings = strings,
                     onYear = {
                         year =
                             it.coerceIn(
@@ -160,6 +182,8 @@ private fun WheelDatePicker(
     maxDate: ShamsiDate?,
     calendarSystem: CalendarSystem,
     numberFormatter: NumberFormatter,
+    colors: ShamsiPickerColors,
+    typography: ShamsiPickerTypography,
     onYear: (Int) -> Unit,
     onMonth: (Int) -> Unit,
     onDay: (Int) -> Unit,
@@ -168,7 +192,7 @@ private fun WheelDatePicker(
     val days = calendarSystem.dayBounds(year, month, maxDay, minDate, maxDate)
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.DATE_WHEEL_ROW_SPACING_DP.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         key(maxDay) {
@@ -178,7 +202,12 @@ private fun WheelDatePicker(
                 label = { numberFormatter.format((it + 1).toLong()) },
                 onSelectedIndexChange = { onDay(it + 1) },
                 enabledRange = (days.first - 1)..<days.last,
-                modifier = Modifier.width(64.dp),
+                textStyle = typography.wheelItemStyle,
+                selectedColor = colors.textColor,
+                unselectedColor = colors.secondaryTextColor,
+                disabledColor = colors.disabledTextColor,
+                fadeColor = colors.fadeColor,
+                modifier = Modifier.width(ShamsiPickerDimens.COMPACT_WHEEL_WIDTH_DP.dp),
             )
         }
         WheelPicker(
@@ -187,7 +216,12 @@ private fun WheelDatePicker(
             label = { calendarSystem.monthNames(year)[it] },
             onSelectedIndexChange = { onMonth(it + 1) },
             enabledRange = (months.first - 1)..<months.last,
-            modifier = Modifier.width(116.dp),
+            textStyle = typography.wheelItemStyle,
+            selectedColor = colors.textColor,
+            unselectedColor = colors.secondaryTextColor,
+            disabledColor = colors.disabledTextColor,
+            fadeColor = colors.fadeColor,
+            modifier = Modifier.width(ShamsiPickerDimens.MONTH_WHEEL_WIDTH_DP.dp),
         )
         WheelPicker(
             itemCount = calendarSystem.yearRange.count(),
@@ -196,7 +230,12 @@ private fun WheelDatePicker(
             onSelectedIndexChange = { onYear(calendarSystem.yearRange.first + it) },
             infinite = false,
             enabledRange = calendarSystem.yearEnabledRange(minDate, maxDate),
-            modifier = Modifier.width(86.dp),
+            textStyle = typography.wheelItemStyle,
+            selectedColor = colors.textColor,
+            unselectedColor = colors.secondaryTextColor,
+            disabledColor = colors.disabledTextColor,
+            fadeColor = colors.fadeColor,
+            modifier = Modifier.width(ShamsiPickerDimens.YEAR_WHEEL_WIDTH_DP.dp),
         )
     }
 }
@@ -213,6 +252,9 @@ private fun CalendarDatePicker(
     calendarSystem: CalendarSystem,
     numberFormatter: NumberFormatter,
     firstDayOfWeek: java.time.DayOfWeek,
+    colors: ShamsiPickerColors,
+    typography: ShamsiPickerTypography,
+    strings: ShamsiDatePickerStrings,
     onYear: (Int) -> Unit,
     onMonth: (Int) -> Unit,
     onDay: (Int) -> Unit,
@@ -231,14 +273,16 @@ private fun CalendarDatePicker(
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.CALENDAR_COLUMN_SPACING_DP.dp),
     ) {
         NavRow(
             label = calendarSystem.monthNames(year)[month - 1],
-            contentDescriptionPrev = stringResource(R.string.shamsi_date_picker_prev_month),
-            contentDescriptionNext = stringResource(R.string.shamsi_date_picker_next_month),
+            contentDescriptionPrev = strings.prevMonthDescription,
+            contentDescriptionNext = strings.nextMonthDescription,
             prevEnabled = afterMin(prevMonth.first, prevMonth.second),
             nextEnabled = beforeMax(nextMonth.first, nextMonth.second),
+            colors = colors,
+            typography = typography,
             onPrev = {
                 onMonth(prevMonth.second)
                 if (prevMonth.first != year) onYear(prevMonth.first)
@@ -250,10 +294,12 @@ private fun CalendarDatePicker(
         )
         NavRow(
             label = numberFormatter.format(year.toLong()),
-            contentDescriptionPrev = stringResource(R.string.shamsi_date_picker_prev_year),
-            contentDescriptionNext = stringResource(R.string.shamsi_date_picker_next_year),
+            contentDescriptionPrev = strings.prevYearDescription,
+            contentDescriptionNext = strings.nextYearDescription,
             prevEnabled = minDate == null || year - 1 >= minDate.year,
             nextEnabled = maxDate == null || year + 1 <= maxDate.year,
+            colors = colors,
+            typography = typography,
             onPrev = { onYear(year - 1) },
             onNext = { onYear(year + 1) },
         )
@@ -264,8 +310,8 @@ private fun CalendarDatePicker(
                     text = name.take(1),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = typography.weekdayLabelStyle,
+                    color = colors.secondaryTextColor,
                 )
             }
         }
@@ -273,7 +319,10 @@ private fun CalendarDatePicker(
         val firstWeekday = calendarSystem.firstWeekdayOfMonth(year, month, firstDayOfWeek)
         val cells = firstWeekday + maxDay
         val rows = (cells + 6) / 7
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.CALENDAR_GRID_ROW_SPACING_DP.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             for (row in 0 until rows) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     for (col in 0 until 7) {
@@ -286,6 +335,8 @@ private fun CalendarDatePicker(
                                     selected = dayNumber == day,
                                     enabled = dayNumber in dayBounds,
                                     numberFormatter = numberFormatter,
+                                    colors = colors,
+                                    typography = typography,
                                     onClick = { onDay(dayNumber) },
                                 )
                             }
@@ -303,17 +354,19 @@ private fun DayCell(
     selected: Boolean,
     enabled: Boolean,
     numberFormatter: NumberFormatter,
+    colors: ShamsiPickerColors,
+    typography: ShamsiPickerTypography,
     onClick: () -> Unit,
 ) {
     val background by animateColorAsState(
-        if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        if (selected) colors.accentColor else Color.Transparent,
         label = "dayBackground",
     )
     Box(
         modifier =
             Modifier
-                .padding(2.dp)
-                .size(38.dp)
+                .padding(ShamsiPickerDimens.DAY_CELL_PADDING_DP.dp)
+                .size(ShamsiPickerDimens.DAY_CELL_SIZE_DP.dp)
                 .clip(CircleShape)
                 .background(background)
                 .clickable(enabled = enabled, onClick = onClick),
@@ -321,13 +374,13 @@ private fun DayCell(
     ) {
         Text(
             text = numberFormatter.format(day.toLong()),
-            style = MaterialTheme.typography.bodyLarge,
+            style = typography.dayCellStyle,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
             color =
                 when {
-                    selected -> MaterialTheme.colorScheme.onPrimary
-                    !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f)
-                    else -> MaterialTheme.colorScheme.onSurface
+                    selected -> colors.onAccentColor
+                    !enabled -> colors.disabledTextColor
+                    else -> colors.textColor
                 },
         )
     }
@@ -338,6 +391,8 @@ internal fun NavRow(
     label: String,
     contentDescriptionPrev: String,
     contentDescriptionNext: String,
+    colors: ShamsiPickerColors,
+    typography: ShamsiPickerTypography,
     onPrev: () -> Unit,
     onNext: () -> Unit,
     prevEnabled: Boolean = true,
@@ -353,9 +408,9 @@ internal fun NavRow(
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.titleMedium,
+            style = typography.navHeaderStyle,
             fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = colors.textColor,
         )
         IconButton(onClick = onNext, enabled = nextEnabled) {
             Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = contentDescriptionNext)
@@ -367,21 +422,29 @@ internal fun NavRow(
 internal fun StyleSwitcher(
     selected: ShamsiDatePickerStyle,
     onSelect: (ShamsiDatePickerStyle) -> Unit,
+    colors: ShamsiPickerColors,
+    typography: ShamsiPickerTypography,
+    wheelLabel: String,
+    calendarLabel: String,
 ) {
     Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        shape = RoundedCornerShape(ShamsiPickerDimens.SWITCHER_CORNER_RADIUS_DP.dp),
+        color = colors.switcherContainerColor,
     ) {
-        Row(modifier = Modifier.padding(3.dp)) {
+        Row(modifier = Modifier.padding(ShamsiPickerDimens.SWITCHER_PADDING_DP.dp)) {
             SegmentButton(
-                text = stringResource(R.string.shamsi_date_picker_style_wheel),
+                text = wheelLabel,
                 selected = selected == ShamsiDatePickerStyle.Wheel,
+                colors = colors,
+                typography = typography,
                 onClick = { onSelect(ShamsiDatePickerStyle.Wheel) },
             )
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(ShamsiPickerDimens.SWITCHER_SEGMENT_GAP_DP.dp))
             SegmentButton(
-                text = stringResource(R.string.shamsi_date_picker_style_calendar),
+                text = calendarLabel,
                 selected = selected == ShamsiDatePickerStyle.Calendar,
+                colors = colors,
+                typography = typography,
                 onClick = { onSelect(ShamsiDatePickerStyle.Calendar) },
             )
         }
@@ -392,26 +455,30 @@ internal fun StyleSwitcher(
 private fun SegmentButton(
     text: String,
     selected: Boolean,
+    colors: ShamsiPickerColors,
+    typography: ShamsiPickerTypography,
     onClick: () -> Unit,
 ) {
     val background by animateColorAsState(
-        if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        if (selected) colors.accentColor else Color.Transparent,
         label = "segmentBackground",
     )
     Box(
         modifier =
             Modifier
-                .clip(RoundedCornerShape(9.dp))
+                .clip(RoundedCornerShape(ShamsiPickerDimens.SEGMENT_CORNER_RADIUS_DP.dp))
                 .background(background)
                 .clickable(onClick = onClick)
-                .padding(horizontal = 20.dp, vertical = 8.dp),
+                .padding(
+                    horizontal = ShamsiPickerDimens.SEGMENT_PADDING_HORIZONTAL_DP.dp,
+                    vertical = ShamsiPickerDimens.SEGMENT_PADDING_VERTICAL_DP.dp,
+                ),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge,
-            color =
-                if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            style = typography.segmentLabelStyle,
+            color = if (selected) colors.onAccentColor else colors.secondaryTextColor,
         )
     }
 }

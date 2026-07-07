@@ -127,19 +127,27 @@ A living, checkbox-driven backlog for `shamsi-core` and `shamsi-picker`.
 
 > Apps with brand colors currently can't restyle pickers without forking.
 
-- [ ] Define `ShamsiPickerColors` (selected/unselected text, wheel highlight,
-      range-strip colors, calendar today/selected backgrounds, disabled alpha).
-- [ ] Define `ShamsiPickerTypography` (or override slots over
-      `MaterialTheme.typography`) for weekday labels, numerals, headers.
-- [ ] Add `ShamsiPickerDefaults.colors(...)` / `.typography(...)` with
-      Material-derived defaults so existing call sites keep working.
-- [ ] Thread `colors`/`typography` through the pickers (prefer a separate optional
-      composable parameter over config bloat).
-- [ ] Replace hardcoded `MaterialTheme.*` references in `WheelPicker.kt`,
-      `ShamsiDatePicker.kt` (`DayCell`, `SegmentButton`) with the new objects.
-- [ ] **Sample app:** add a demo that switches between the default theme and a
+- [x] Define `ShamsiPickerColors` (selected/unselected text, wheel highlight,
+      range-strip colors, calendar today/selected backgrounds, disabled alpha). — done 2026-07-08
+- [x] Define `ShamsiPickerTypography` (or override slots over
+      `MaterialTheme.typography`) for weekday labels, numerals, headers. — done 2026-07-08
+- [x] Add `ShamsiPickerDefaults.colors(...)` / `.typography(...)` with
+      Material-derived defaults so existing call sites keep working. — done 2026-07-08
+- [x] Thread `colors`/`typography` through the pickers (prefer a separate optional
+      composable parameter over config bloat). — done 2026-07-08
+- [x] Replace hardcoded `MaterialTheme.*` references in `WheelPicker.kt`,
+      `ShamsiDatePicker.kt` (`DayCell`, `SegmentButton`) with the new objects. — done 2026-07-08
+- [x] **Sample app:** add a demo that switches between the default theme and a
       custom-branded `ShamsiPickerColors`/typography so the difference is visible
-      live. README "Theming" section.
+      live. README "Theming" section. — done 2026-07-08
+      > NOTE: Also went beyond the original scope of this phase and added
+      > per-dialog `ShamsiPickerStrings` (title/confirm/cancel/labels), so
+      > consumers can fully re-word each dialog independently of calendar type
+      > or device locale, not just restyle colors/typography. Also extracted all
+      > previously-hardcoded dp/alpha/count literals in the wheel and calendar
+      > grid UI into an internal `ShamsiPickerDimens` object to remove
+      > duplication (this was a separate ask, not a roadmap item, but touched
+      > the same files so it's noted here).
 
 ---
 

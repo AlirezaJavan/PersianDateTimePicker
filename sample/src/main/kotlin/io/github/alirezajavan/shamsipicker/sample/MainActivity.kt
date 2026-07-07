@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.calendar.CalendarType
 import io.github.alirezajavan.shamsipicker.calendar.GregorianCalendarSystem
@@ -45,6 +49,9 @@ import io.github.alirezajavan.shamsipicker.ui.ShamsiDatePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiDateRangePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiTimePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiTimeRangePickerDialog
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerColors
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerDefaults
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerTypography
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +78,8 @@ fun SampleScreen() {
     // null = hidden; non-null = open with that style
     var showDateRangePickerStyle by remember { mutableStateOf<ShamsiDatePickerStyle?>(null) }
     var showTimeRangePicker by remember { mutableStateOf(false) }
+    var useCustomTheme by remember { mutableStateOf(false) }
+    var showThemedDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -168,6 +177,28 @@ fun SampleScreen() {
             HorizontalDivider()
             Spacer(modifier = Modifier.height(32.dp))
 
+            // ── Theming ───────────────────────────────────────────────────────
+            Text("Theming", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text =
+                    "Same picker, restyled via ShamsiPickerColors/Typography and re-worded via " +
+                        "ShamsiDatePickerStrings — English text even while the calendar is Shamsi.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Use custom brand theme")
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(checked = useCustomTheme, onCheckedChange = { useCustomTheme = it })
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = { showThemedDatePicker = true }) { Text("Open Themed Date Picker") }
+
+            Spacer(modifier = Modifier.height(32.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(32.dp))
+
             // ── Debug section ──────────────────────────────────────────────
             Text("Calendar Abstraction Debug", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(12.dp))
@@ -258,4 +289,59 @@ fun SampleScreen() {
                 ),
         )
     }
+
+    // ── Themed date picker demo ─────────────────────────────────────────────
+
+    if (showThemedDatePicker) {
+        ShamsiDatePickerDialog(
+            onConfirm = {
+                selectedDate = it
+                showThemedDatePicker = false
+            },
+            onDismiss = { showThemedDatePicker = false },
+            config =
+                ShamsiDatePickerConfig(
+                    initialDate = selectedDate,
+                    style = ShamsiDatePickerStyle.Calendar,
+                    calendarType = calendarType,
+                ),
+            colors = if (useCustomTheme) brandColors() else ShamsiPickerDefaults.colors(),
+            typography = if (useCustomTheme) brandTypography() else ShamsiPickerDefaults.typography(),
+            strings =
+                if (useCustomTheme) {
+                    ShamsiPickerDefaults.dateStrings(
+                        title = "Pick a day",
+                        confirmText = "Done",
+                        cancelText = "Nevermind",
+                    )
+                } else {
+                    ShamsiPickerDefaults.dateStrings()
+                },
+        )
+    }
+}
+
+/** A sample brand palette: deep purple accents on a warm off-white surface. */
+@Composable
+private fun brandColors(): ShamsiPickerColors =
+    ShamsiPickerDefaults.colors(
+        accentColor = Color(0xFF6750A4),
+        onAccentColor = Color.White,
+        dialogContainerColor = Color(0xFFFFF8F0),
+        titleColor = Color(0xFF6750A4),
+        confirmButtonColors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6750A4)),
+    )
+
+/** A sample serif brand font applied across every text style the picker exposes. */
+@Composable
+private fun brandTypography(): ShamsiPickerTypography {
+    val brandFont = FontFamily.Serif
+    val defaults = ShamsiPickerDefaults.typography()
+    return defaults.copy(
+        titleStyle = defaults.titleStyle.copy(fontFamily = brandFont),
+        wheelItemStyle = defaults.wheelItemStyle.copy(fontFamily = brandFont),
+        dayCellStyle = defaults.dayCellStyle.copy(fontFamily = brandFont),
+        navHeaderStyle = defaults.navHeaderStyle.copy(fontFamily = brandFont),
+        buttonTextStyle = defaults.buttonTextStyle.copy(fontFamily = brandFont),
+    )
 }
