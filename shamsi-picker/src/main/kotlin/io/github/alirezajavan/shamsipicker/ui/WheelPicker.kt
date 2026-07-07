@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -37,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -44,6 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerColors
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerDimens
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerTypography
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.abs
 
@@ -57,15 +67,15 @@ public fun WheelPicker(
     onSelectedIndexChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
     infinite: Boolean = true,
-    visibleCount: Int = 5,
-    itemHeight: Dp = 44.dp,
+    visibleCount: Int = ShamsiPickerDimens.WHEEL_DEFAULT_VISIBLE_COUNT,
+    itemHeight: Dp = ShamsiPickerDimens.WHEEL_ITEM_HEIGHT_DP.dp,
     enabledRange: IntRange = 0 until itemCount,
     textStyle: TextStyle = MaterialTheme.typography.titleLarge,
     selectedColor: Color = MaterialTheme.colorScheme.onSurface,
     unselectedColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    disabledColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f),
+    disabledColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = ShamsiPickerDimens.DISABLED_CONTENT_ALPHA),
     fadeColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
-    dimAlpha: Float = 0.1f,
+    dimAlpha: Float = ShamsiPickerDimens.WHEEL_DIM_ALPHA,
     content: @Composable (index: Int) -> Unit,
 ) {
     require(itemCount > 0) { "itemCount must be > 0" }
@@ -80,7 +90,7 @@ public fun WheelPicker(
         return if (range.isEmpty()) logical else logical.coerceIn(range.first, range.last)
     }
 
-    val loops = if (infinite) 2_000 else 1
+    val loops = if (infinite) ShamsiPickerDimens.WHEEL_INFINITE_LOOP_COUNT else 1
     val total = loops * itemCount
     val base = if (infinite) (loops / 2) * itemCount else 0
     val startRaw = (base + initialIndex).coerceIn(0, total - 1)
@@ -126,20 +136,32 @@ public fun WheelPicker(
                     .minByOrNull { abs((it.offset + it.size / 2f) - centerPx) }
             if (centeredItem != null) {
                 val currentRaw = centeredItem.index - half
-                listState.animateScrollToItem((currentRaw + (target - current)).coerceIn(0, total - 1))
+                val destination = (currentRaw + (target - current)).coerceIn(0, total - 1)
+                try {
+                    listState.animateScrollToItem(destination)
+                } catch (_: CancellationException) {
+                    // A new user gesture grabbed the same list mid-animation and cancelled it
+                    // via the scroll mutex. That is not "this coroutine got cancelled" - rethrow
+                    // only if it actually is, otherwise bail out without emitting a target we
+                    // never reached and let the gesture's own scroll-stop drive the next settle.
+                    currentCoroutineContext().ensureActive()
+                    return
+                }
             }
         }
         currentOnSelected.value(target)
     }
 
+    // A single collector drives every settle so concurrent corrections can never race on
+    // the same listState: both "scrolling stopped" and "enabledRange changed" (e.g. the
+    // range picker's "to" wheel bounds shifting while its "from" wheel moves) funnel through
+    // this one flow instead of two independent LaunchedEffects.
     LaunchedEffect(listState, itemCount, infinite) {
-        snapshotFlow { listState.isScrollInProgress }
+        snapshotFlow { listState.isScrollInProgress to currentEnabled.value }
             .distinctUntilChanged()
-            .collect { scrolling -> if (!scrolling) settleOntoEnabled() }
-    }
-
-    LaunchedEffect(enabledRange) {
-        if (!listState.isScrollInProgress) settleOntoEnabled()
+            .collect { (scrolling, _) ->
+                if (!scrolling) settleOntoEnabled()
+            }
     }
 
     Box(
@@ -150,11 +172,11 @@ public fun WheelPicker(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp)
+                    .padding(horizontal = ShamsiPickerDimens.WHEEL_HIGHLIGHT_HORIZONTAL_INSET_DP.dp)
                     .height(itemHeight)
                     .background(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
-                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = ShamsiPickerDimens.WHEEL_HIGHLIGHT_ALPHA),
+                        shape = RoundedCornerShape(ShamsiPickerDimens.WHEEL_HIGHLIGHT_CORNER_RADIUS_DP.dp),
                     ),
         )
 
@@ -224,11 +246,15 @@ public fun WheelPicker(
     onSelectedIndexChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
     infinite: Boolean = true,
-    visibleCount: Int = 5,
-    itemHeight: Dp = 44.dp,
+    visibleCount: Int = ShamsiPickerDimens.WHEEL_DEFAULT_VISIBLE_COUNT,
+    itemHeight: Dp = ShamsiPickerDimens.WHEEL_ITEM_HEIGHT_DP.dp,
     enabledRange: IntRange = 0 until itemCount,
     textStyle: TextStyle = MaterialTheme.typography.titleLarge,
-    dimAlpha: Float = 0.1f,
+    selectedColor: Color = MaterialTheme.colorScheme.onSurface,
+    unselectedColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    disabledColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = ShamsiPickerDimens.DISABLED_CONTENT_ALPHA),
+    fadeColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    dimAlpha: Float = ShamsiPickerDimens.WHEEL_DIM_ALPHA,
 ) {
     WheelPicker(
         itemCount = itemCount,
@@ -240,6 +266,10 @@ public fun WheelPicker(
         itemHeight = itemHeight,
         enabledRange = enabledRange,
         textStyle = textStyle,
+        selectedColor = selectedColor,
+        unselectedColor = unselectedColor,
+        disabledColor = disabledColor,
+        fadeColor = fadeColor,
         dimAlpha = dimAlpha,
     ) { index ->
         Text(text = label(index), maxLines = 1)
@@ -261,11 +291,11 @@ private fun Modifier.wheelTransform(
         val t = (abs(rows) / half).coerceIn(0f, 1f)
 
         alpha = lerp(1f, dimAlpha, t)
-        val scale = lerp(1f, 0.72f, t)
+        val scale = lerp(1f, ShamsiPickerDimens.WHEEL_MIN_SCALE, t)
         scaleX = scale
         scaleY = scale
-        rotationX = -rows * 26f
-        cameraDistance = 10f * density
+        rotationX = -rows * ShamsiPickerDimens.WHEEL_MAX_ROTATION_DEGREES
+        cameraDistance = ShamsiPickerDimens.WHEEL_CAMERA_DISTANCE_MULTIPLIER * density
     }
 
 @Composable
@@ -275,10 +305,14 @@ internal fun PickerDialogScaffold(
     cancelText: String,
     onCancel: () -> Unit,
     onConfirm: () -> Unit,
+    colors: ShamsiPickerColors,
+    typography: ShamsiPickerTypography,
     modifier: Modifier = Modifier,
     header: (@Composable () -> Unit)? = null,
     body: @Composable () -> Unit,
 ) {
+    val screenHeight = LocalWindowInfo.current.containerSize.height.dp
+
     Dialog(
         onDismissRequest = onCancel,
         properties =
@@ -287,39 +321,54 @@ internal fun PickerDialogScaffold(
         Surface(
             modifier =
                 modifier
-                    .padding(24.dp)
-                    .width(340.dp),
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            tonalElevation = 0.dp,
+                    .padding(ShamsiPickerDimens.DIALOG_OUTER_PADDING_DP.dp)
+                    .width(ShamsiPickerDimens.DIALOG_WIDTH_DP.dp)
+                    .heightIn(max = screenHeight - ShamsiPickerDimens.DIALOG_HEIGHT_INSET_DP.dp),
+            shape = RoundedCornerShape(ShamsiPickerDimens.DIALOG_CORNER_RADIUS_DP.dp),
+            color = colors.dialogContainerColor,
+            tonalElevation = ShamsiPickerDimens.DIALOG_TONAL_ELEVATION_DP.dp,
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
+                modifier =
+                    Modifier.padding(
+                        horizontal = ShamsiPickerDimens.DIALOG_CONTENT_PADDING_DP.dp,
+                        vertical = ShamsiPickerDimens.DIALOG_CONTENT_PADDING_DP.dp,
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    style = typography.titleStyle,
+                    color = colors.titleColor,
                 )
                 if (header != null) {
-                    Box(modifier = Modifier.padding(top = 16.dp)) { header() }
+                    Box(modifier = Modifier.padding(top = ShamsiPickerDimens.DIALOG_HEADER_SPACING_DP.dp)) { header() }
                 }
-                Box(modifier = Modifier.padding(vertical = 16.dp)) { body() }
+                Box(
+                    modifier =
+                        Modifier
+                            .padding(vertical = ShamsiPickerDimens.DIALOG_BODY_SPACING_DP.dp)
+                            .weight(1f, fill = false)
+                            .verticalScroll(rememberScrollState()),
+                ) {
+                    body()
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.DIALOG_BUTTON_SPACING_DP.dp),
                 ) {
                     OutlinedButton(
                         onClick = onCancel,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp),
-                    ) { Text(cancelText) }
+                        shape = RoundedCornerShape(ShamsiPickerDimens.DIALOG_BUTTON_CORNER_RADIUS_DP.dp),
+                        colors = colors.cancelButtonColors,
+                    ) { Text(cancelText, style = typography.buttonTextStyle) }
                     Button(
                         onClick = onConfirm,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp),
-                    ) { Text(confirmText) }
+                        shape = RoundedCornerShape(ShamsiPickerDimens.DIALOG_BUTTON_CORNER_RADIUS_DP.dp),
+                        colors = colors.confirmButtonColors,
+                    ) { Text(confirmText, style = typography.buttonTextStyle) }
                 }
             }
         }

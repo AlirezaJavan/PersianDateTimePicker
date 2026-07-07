@@ -1,6 +1,8 @@
 package io.github.alirezajavan.shamsipicker.model
 
+import io.github.alirezajavan.shamsipicker.calendar.CalendarSystem
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
+import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendarSystem
 import kotlinx.serialization.Serializable
 
 /**
@@ -38,4 +40,27 @@ public data class ShamsiDate(
                 { it.minute },
             )
     }
+}
+
+/**
+ * Converts this Jalali date to a date representation in the given [system].
+ *
+ * This is used internally by the pickers to handle Gregorian mode while reusing
+ * [ShamsiDate] as a data container.
+ */
+public fun ShamsiDate.toSystem(system: CalendarSystem): ShamsiDate {
+    if (system is ShamsiCalendarSystem) return this
+    val epochDay = ShamsiCalendarSystem.toEpochDay(year, month, day)
+    val (y, m, d) = system.fromEpochDay(epochDay)
+    return copy(year = y, month = m, day = d)
+}
+
+/**
+ * Converts this date (interpreted in the given [system]) back to a Jalali date.
+ */
+public fun ShamsiDate.fromSystem(system: CalendarSystem): ShamsiDate {
+    if (system is ShamsiCalendarSystem) return this
+    val epochDay = system.toEpochDay(year, month, day)
+    val (y, m, d) = ShamsiCalendarSystem.fromEpochDay(epochDay)
+    return copy(year = y, month = m, day = d)
 }

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -21,34 +20,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import io.github.alirezajavan.shamsipicker.R
-import io.github.alirezajavan.shamsipicker.format.PersianNumber
+import io.github.alirezajavan.shamsipicker.format.NumberFormatter
 import io.github.alirezajavan.shamsipicker.model.ShamsiTime
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRangePickerConfig
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerColors
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerDefaults
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerDimens
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerTypography
+import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiTimeRangePickerStrings
 
 private const val RANGE_MINUTES_PER_DAY: Int = 24 * 60
-private const val RANGE_TIME_WHEEL_DIM_ALPHA = 0.4f
 
 /**
- * An iOS-style Shamsi time range picker dialog for selecting a "from" and "to" time.
+ * A time range picker dialog supporting both Shamsi (Persian digits) and Gregorian (Latin digits).
  *
  * Two wheel pickers are shown stacked vertically — one labeled "از" (from) and one "تا" (to).
- * If the user confirms with "from" > "to", the values are automatically swapped.
+ * If the user confirms with "from" > "to", the values are automatically swapped. Use [colors],
+ * [typography], and [strings] to restyle or re-word the dialog without forking it.
  */
 @Composable
 public fun ShamsiTimeRangePickerDialog(
     onConfirm: (ShamsiTimeRange) -> Unit,
     onDismiss: () -> Unit,
     config: ShamsiTimeRangePickerConfig = ShamsiTimeRangePickerConfig(),
+    colors: ShamsiPickerColors = ShamsiPickerDefaults.colors(),
+    typography: ShamsiPickerTypography = ShamsiPickerDefaults.typography(),
+    strings: ShamsiTimeRangePickerStrings = ShamsiPickerDefaults.timeRangeStrings(),
 ) {
     val initFrom = remember { config.initialFrom.toShamsiTime() }
     val initTo = remember { config.initialTo.toShamsiTime() }
     val resolvedMin = remember(config.minTime) { config.minTime?.toShamsiTime() }
     val resolvedMax = remember(config.maxTime) { config.maxTime?.toShamsiTime() }
+
+    val numberFormatter = remember(config.calendarType) { NumberFormatter.get(config.calendarType) }
 
     val context = LocalContext.current
     val is24h = DateFormat.is24HourFormat(context)
@@ -73,21 +80,23 @@ public fun ShamsiTimeRangePickerDialog(
     if (toMinute > toMhi) toMinute = toMhi
 
     PickerDialogScaffold(
-        title = stringResource(R.string.shamsi_time_range_picker_title),
-        confirmText = stringResource(R.string.shamsi_time_picker_confirm),
-        cancelText = stringResource(R.string.shamsi_time_picker_cancel),
+        title = strings.title,
+        confirmText = strings.confirmText,
+        cancelText = strings.cancelText,
         onCancel = onDismiss,
         onConfirm = {
             val from = ShamsiTime(fromHour, fromMinute)
             val to = ShamsiTime(toHour, toMinute)
             if (from <= to) onConfirm(ShamsiTimeRange(from, to)) else onConfirm(ShamsiTimeRange(to, from))
         },
+        colors = colors,
+        typography = typography,
     ) {
         // Labels are in the device's natural RTL context so Persian text sits on the right.
         // Only the wheel rows are forced to LTR (to keep H:M column order consistent).
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.RANGE_ROW_SPACING_DP.dp),
         ) {
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 TimeWheelRow(
@@ -96,11 +105,15 @@ public fun ShamsiTimeRangePickerDialog(
                     is24h = is24h,
                     minTime = resolvedMin,
                     maxTime = resolvedMax,
+                    numberFormatter = numberFormatter,
+                    colors = colors,
+                    typography = typography,
+                    strings = strings,
                     onHourChange = { fromHour = it },
                     onMinuteChange = { fromMinute = it },
                 )
             }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = ShamsiPickerDimens.RANGE_DIVIDER_PADDING_DP.dp))
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 TimeWheelRow(
                     initialHour = initTo.hour,
@@ -108,6 +121,10 @@ public fun ShamsiTimeRangePickerDialog(
                     is24h = is24h,
                     minTime = effectiveToMin,
                     maxTime = resolvedMax,
+                    numberFormatter = numberFormatter,
+                    colors = colors,
+                    typography = typography,
+                    strings = strings,
                     onHourChange = { toHour = it },
                     onMinuteChange = { toMinute = it },
                 )
@@ -123,6 +140,10 @@ private fun TimeWheelRow(
     is24h: Boolean,
     minTime: ShamsiTime?,
     maxTime: ShamsiTime?,
+    numberFormatter: NumberFormatter,
+    colors: ShamsiPickerColors,
+    typography: ShamsiPickerTypography,
+    strings: ShamsiTimeRangePickerStrings,
     onHourChange: (Int) -> Unit,
     onMinuteChange: (Int) -> Unit,
 ) {
@@ -159,15 +180,20 @@ private fun TimeWheelRow(
             WheelPicker(
                 itemCount = 24,
                 initialIndex = initialHour,
-                label = { PersianNumber.toPersianDigits(it.toString().padStart(2, '0')) },
+                label = { numberFormatter.format(it.toLong(), minDigits = 2) },
                 onSelectedIndexChange = { idx ->
                     hour24 = idx
                     onHourChange(idx)
                 },
                 enabledRange = hMin..hMax,
-                visibleCount = 3,
-                dimAlpha = RANGE_TIME_WHEEL_DIM_ALPHA,
-                modifier = Modifier.width(72.dp),
+                visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
+                textStyle = typography.wheelItemStyle,
+                selectedColor = colors.textColor,
+                unselectedColor = colors.secondaryTextColor,
+                disabledColor = colors.disabledTextColor,
+                fadeColor = colors.fadeColor,
+                modifier = Modifier.width(ShamsiPickerDimens.WIDE_WHEEL_WIDTH_DP.dp),
             )
         } else {
             val a = (hMin - amPm * 12).coerceAtLeast(0)
@@ -178,63 +204,75 @@ private fun TimeWheelRow(
                 initialIndex = initialHourIndex,
                 label = {
                     val display = if (it == 0) 12 else it
-                    PersianNumber.toPersianDigits(display.toString().padStart(2, '0'))
+                    numberFormatter.format(display.toLong(), minDigits = 2)
                 },
                 onSelectedIndexChange = { idx ->
                     hourIndex = idx
                     onHourChange(amPm * 12 + idx)
                 },
                 enabledRange = hourEnabled,
-                visibleCount = 3,
-                dimAlpha = RANGE_TIME_WHEEL_DIM_ALPHA,
-                modifier = Modifier.width(64.dp),
+                visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
+                textStyle = typography.wheelItemStyle,
+                selectedColor = colors.textColor,
+                unselectedColor = colors.secondaryTextColor,
+                disabledColor = colors.disabledTextColor,
+                fadeColor = colors.fadeColor,
+                modifier = Modifier.width(ShamsiPickerDimens.COMPACT_WHEEL_WIDTH_DP.dp),
             )
         }
 
         Text(
             text = ":",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 4.dp),
+            style = typography.separatorStyle,
+            color = colors.textColor,
+            modifier = Modifier.padding(horizontal = ShamsiPickerDimens.SEPARATOR_PADDING_DP.dp),
         )
 
         WheelPicker(
             itemCount = 60,
             initialIndex = initialMinute,
-            label = { PersianNumber.toPersianDigits(it.toString().padStart(2, '0')) },
+            label = { numberFormatter.format(it.toLong(), minDigits = 2) },
             onSelectedIndexChange = { min ->
                 minute = min
                 onMinuteChange(min)
             },
             enabledRange = minuteRange,
-            visibleCount = 3,
-            dimAlpha = RANGE_TIME_WHEEL_DIM_ALPHA,
-            modifier = Modifier.width(64.dp),
+            visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+            dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
+            textStyle = typography.wheelItemStyle,
+            selectedColor = colors.textColor,
+            unselectedColor = colors.secondaryTextColor,
+            disabledColor = colors.disabledTextColor,
+            fadeColor = colors.fadeColor,
+            modifier = Modifier.width(ShamsiPickerDimens.COMPACT_WHEEL_WIDTH_DP.dp),
         )
 
         if (!is24h) {
-            val am = stringResource(R.string.shamsi_time_am)
-            val pm = stringResource(R.string.shamsi_time_pm)
             val amPmEnabled =
                 when {
                     hMin <= 11 && hMax >= 12 -> 0..1
                     hMin <= 11 -> 0..0
                     else -> 1..1
                 }
-            Box(modifier = Modifier.width(72.dp)) {
+            Box(modifier = Modifier.width(ShamsiPickerDimens.WIDE_WHEEL_WIDTH_DP.dp)) {
                 WheelPicker(
                     itemCount = 2,
                     initialIndex = initialAmPm,
-                    label = { if (it == 0) am else pm },
+                    label = { if (it == 0) strings.amLabel else strings.pmLabel },
                     onSelectedIndexChange = { idx ->
                         amPm = idx
                         onHourChange(idx * 12 + hourIndex)
                     },
                     infinite = false,
                     enabledRange = amPmEnabled,
-                    visibleCount = 3,
-                    dimAlpha = RANGE_TIME_WHEEL_DIM_ALPHA,
-                    textStyle = MaterialTheme.typography.titleMedium,
+                    visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                    dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
+                    textStyle = typography.compactWheelItemStyle,
+                    selectedColor = colors.textColor,
+                    unselectedColor = colors.secondaryTextColor,
+                    disabledColor = colors.disabledTextColor,
+                    fadeColor = colors.fadeColor,
                 )
             }
         }

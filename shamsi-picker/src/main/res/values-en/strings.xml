@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shamsi_date_picker_title">Select Date</string>
+    <string name="shamsi_date_picker_confirm">Confirm</string>
+    <string name="shamsi_date_picker_cancel">Cancel</string>
+    <string name="shamsi_date_picker_style_wheel">Wheel</string>
+    <string name="shamsi_date_picker_style_calendar">Calendar</string>
+    <string name="shamsi_date_picker_prev_month">Previous Month</string>
+    <string name="shamsi_date_picker_next_month">Next Month</string>
+    <string name="shamsi_date_picker_prev_year">Previous Year</string>
+    <string name="shamsi_date_picker_next_year">Next Year</string>
+    <string name="shamsi_time_picker_title">Select Time</string>
+    <string name="shamsi_time_picker_confirm">Confirm</string>
+    <string name="shamsi_time_picker_cancel">Cancel</string>
+    <string name="shamsi_time_am">AM</string>
+    <string name="shamsi_time_pm">PM</string>
+    <string name="shamsi_date_range_picker_title">Select Date Range</string>
+    <string name="shamsi_date_range_picker_from">Start Date</string>
+    <string name="shamsi_date_range_picker_to">End Date</string>
+    <string name="shamsi_date_range_picker_hint_select_to">Select end date</string>
+    <string name="shamsi_time_range_picker_title">Select Time Range</string>
+    <string name="shamsi_time_range_picker_from">Start Time</string>
+    <string name="shamsi_time_range_picker_to">End Time</string>
+</resources>

@@ -1,5 +1,7 @@
 package io.github.alirezajavan.shamsipicker.model
 
+import io.github.alirezajavan.shamsipicker.calendar.CalendarType
+
 /**
  * Configuration for [io.github.alirezajavan.shamsipicker.ui.ShamsiTimePickerDialog].
  *
@@ -13,4 +15,5 @@ public data class ShamsiTimePickerConfig(
     val initialTime: ShamsiTimeLimit = ShamsiTime.Now,
     val minTime: ShamsiTimeLimit? = null,
     val maxTime: ShamsiTimeLimit? = null,
+    val calendarType: CalendarType = CalendarType.Shamsi,
 )
