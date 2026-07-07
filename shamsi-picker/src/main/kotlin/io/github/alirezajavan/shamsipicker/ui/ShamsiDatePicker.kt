@@ -41,9 +41,10 @@ import io.github.alirezajavan.shamsipicker.R
 import io.github.alirezajavan.shamsipicker.calendar.CalendarSystem
 import io.github.alirezajavan.shamsipicker.format.NumberFormatter
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
-import io.github.alirezajavan.shamsipicker.model.ShamsiDateLimit
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
+import io.github.alirezajavan.shamsipicker.model.fromSystem
+import io.github.alirezajavan.shamsipicker.model.toSystem
 
 /**
  * A date picker dialog supporting both Shamsi and Gregorian calendars.
@@ -57,11 +58,20 @@ public fun ShamsiDatePickerDialog(
     onDismiss: () -> Unit,
     config: ShamsiDatePickerConfig = ShamsiDatePickerConfig(),
 ) {
-    val initialDate = remember { config.initialDate.toShamsiDate() }
-    val resolvedMin = remember(config.minDate) { config.minDate?.toShamsiDate() }
-    val resolvedMax = remember(config.maxDate) { config.maxDate?.toShamsiDate() }
-
     val calendarSystem = remember(config.calendarType) { config.calendarType.system }
+    val initialDate =
+        remember(config.initialDate, calendarSystem) {
+            config.initialDate.toShamsiDate().toSystem(calendarSystem)
+        }
+    val resolvedMin =
+        remember(config.minDate, calendarSystem) {
+            config.minDate?.toShamsiDate()?.toSystem(calendarSystem)
+        }
+    val resolvedMax =
+        remember(config.maxDate, calendarSystem) {
+            config.maxDate?.toShamsiDate()?.toSystem(calendarSystem)
+        }
+
     val numberFormatter = remember(config.calendarType) { NumberFormatter.get(config.calendarType) }
     val firstDayOfWeek =
         remember(config.firstDayOfWeek, calendarSystem) {
@@ -90,7 +100,10 @@ public fun ShamsiDatePickerDialog(
         confirmText = stringResource(R.string.shamsi_date_picker_confirm),
         cancelText = stringResource(R.string.shamsi_date_picker_cancel),
         onCancel = onDismiss,
-        onConfirm = { onConfirm(ShamsiDate(year, month, day, initialDate.hour, initialDate.minute)) },
+        onConfirm = {
+            val result = ShamsiDate(year, month, day, initialDate.hour, initialDate.minute)
+            onConfirm(result.fromSystem(calendarSystem))
+        },
         header = { StyleSwitcher(selected = currentStyle, onSelect = { currentStyle = it }) },
     ) {
         when (currentStyle) {

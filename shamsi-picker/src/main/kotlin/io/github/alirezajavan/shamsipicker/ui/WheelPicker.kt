@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -36,7 +39,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -44,6 +49,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.abs
 
@@ -126,20 +134,32 @@ public fun WheelPicker(
                     .minByOrNull { abs((it.offset + it.size / 2f) - centerPx) }
             if (centeredItem != null) {
                 val currentRaw = centeredItem.index - half
-                listState.animateScrollToItem((currentRaw + (target - current)).coerceIn(0, total - 1))
+                val destination = (currentRaw + (target - current)).coerceIn(0, total - 1)
+                try {
+                    listState.animateScrollToItem(destination)
+                } catch (_: CancellationException) {
+                    // A new user gesture grabbed the same list mid-animation and cancelled it
+                    // via the scroll mutex. That is not "this coroutine got cancelled" - rethrow
+                    // only if it actually is, otherwise bail out without emitting a target we
+                    // never reached and let the gesture's own scroll-stop drive the next settle.
+                    currentCoroutineContext().ensureActive()
+                    return
+                }
             }
         }
         currentOnSelected.value(target)
     }
 
+    // A single collector drives every settle so concurrent corrections can never race on
+    // the same listState: both "scrolling stopped" and "enabledRange changed" (e.g. the
+    // range picker's "to" wheel bounds shifting while its "from" wheel moves) funnel through
+    // this one flow instead of two independent LaunchedEffects.
     LaunchedEffect(listState, itemCount, infinite) {
-        snapshotFlow { listState.isScrollInProgress }
+        snapshotFlow { listState.isScrollInProgress to currentEnabled.value }
             .distinctUntilChanged()
-            .collect { scrolling -> if (!scrolling) settleOntoEnabled() }
-    }
-
-    LaunchedEffect(enabledRange) {
-        if (!listState.isScrollInProgress) settleOntoEnabled()
+            .collect { (scrolling, _) ->
+                if (!scrolling) settleOntoEnabled()
+            }
     }
 
     Box(
@@ -279,6 +299,9 @@ internal fun PickerDialogScaffold(
     header: (@Composable () -> Unit)? = null,
     body: @Composable () -> Unit,
 ) {
+    val configuration = LocalConfiguration.current
+    val screenHeight = LocalWindowInfo.current.containerSize.height.dp
+
     Dialog(
         onDismissRequest = onCancel,
         properties =
@@ -288,7 +311,8 @@ internal fun PickerDialogScaffold(
             modifier =
                 modifier
                     .padding(24.dp)
-                    .width(340.dp),
+                    .width(340.dp)
+                    .heightIn(max = screenHeight - 64.dp),
             shape = RoundedCornerShape(28.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             tonalElevation = 0.dp,
@@ -305,7 +329,15 @@ internal fun PickerDialogScaffold(
                 if (header != null) {
                     Box(modifier = Modifier.padding(top = 16.dp)) { header() }
                 }
-                Box(modifier = Modifier.padding(vertical = 16.dp)) { body() }
+                Box(
+                    modifier =
+                        Modifier
+                            .padding(vertical = 16.dp)
+                            .weight(1f, fill = false)
+                            .verticalScroll(rememberScrollState()),
+                ) {
+                    body()
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),

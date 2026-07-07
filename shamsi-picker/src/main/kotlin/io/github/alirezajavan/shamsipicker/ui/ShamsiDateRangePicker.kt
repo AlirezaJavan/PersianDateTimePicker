@@ -43,6 +43,8 @@ import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRangePickerConfig
+import io.github.alirezajavan.shamsipicker.model.fromSystem
+import io.github.alirezajavan.shamsipicker.model.toSystem
 
 private const val RANGE_WHEEL_DIM_ALPHA = 0.4f
 
@@ -58,16 +60,22 @@ public fun ShamsiDateRangePickerDialog(
     onDismiss: () -> Unit,
     config: ShamsiDateRangePickerConfig = ShamsiDateRangePickerConfig(),
 ) {
+    val calendarSystem = remember(config.calendarType) { config.calendarType.system }
     val (initFrom, initTo) =
-        remember {
-            val f = config.initialFrom.toShamsiDate()
-            val t = config.initialTo.toShamsiDate()
+        remember(config.initialFrom, config.initialTo, calendarSystem) {
+            val f = config.initialFrom.toShamsiDate().toSystem(calendarSystem)
+            val t = config.initialTo.toShamsiDate().toSystem(calendarSystem)
             if (f <= t) f to t else t to f
         }
-    val resolvedMin = remember(config.minDate) { config.minDate?.toShamsiDate() }
-    val resolvedMax = remember(config.maxDate) { config.maxDate?.toShamsiDate() }
+    val resolvedMin =
+        remember(config.minDate, calendarSystem) {
+            config.minDate?.toShamsiDate()?.toSystem(calendarSystem)
+        }
+    val resolvedMax =
+        remember(config.maxDate, calendarSystem) {
+            config.maxDate?.toShamsiDate()?.toSystem(calendarSystem)
+        }
 
-    val calendarSystem = remember(config.calendarType) { config.calendarType.system }
     val numberFormatter = remember(config.calendarType) { NumberFormatter.get(config.calendarType) }
     val firstDayOfWeek =
         remember(config.firstDayOfWeek, calendarSystem) {
@@ -118,14 +126,21 @@ public fun ShamsiDateRangePickerDialog(
             ShamsiDatePickerStyle.Wheel -> {
                 val from = ShamsiDate(fromYear, fromMonth, fromDay, initFrom.hour, initFrom.minute)
                 val to = ShamsiDate(toYear, toMonth, toDay, initTo.hour, initTo.minute)
-                if (from <= to) ShamsiDateRange(from, to) else ShamsiDateRange(to, from)
+                val result = if (from <= to) ShamsiDateRange(from, to) else ShamsiDateRange(to, from)
+                ShamsiDateRange(
+                    result.from.fromSystem(calendarSystem),
+                    result.to.fromSystem(calendarSystem),
+                )
             }
 
             ShamsiDatePickerStyle.Calendar -> {
                 val effectiveTo = toDate ?: fromDate
                 val from = fromDate.copy(hour = initFrom.hour, minute = initFrom.minute)
                 val to = effectiveTo.copy(hour = initTo.hour, minute = initTo.minute)
-                ShamsiDateRange(from, to)
+                ShamsiDateRange(
+                    from.fromSystem(calendarSystem),
+                    to.fromSystem(calendarSystem),
+                )
             }
         }
 

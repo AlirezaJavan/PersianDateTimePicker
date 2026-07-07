@@ -3,6 +3,7 @@ package io.github.alirezajavan.shamsipicker.format
 import io.github.alirezajavan.shamsipicker.calendar.CalendarType
 import io.github.alirezajavan.shamsipicker.model.MonthKey
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
+import io.github.alirezajavan.shamsipicker.model.toSystem
 
 /** Display formatting for dates. Pure functions, unit-testable. */
 public object DateFormatter {
@@ -12,11 +13,12 @@ public object DateFormatter {
         type: CalendarType = CalendarType.Shamsi,
     ): String {
         val system = type.system
+        val resolved = date.toSystem(system)
         val numberFormatter = NumberFormatter.get(type)
-        val weekday = system.weekdayName(date.year, date.month, date.day)
-        val day = numberFormatter.format(date.day.toLong())
-        val month = system.monthNames(date.year)[date.month - 1]
-        val year = numberFormatter.format(date.year.toLong())
+        val weekday = system.weekdayName(resolved.year, resolved.month, resolved.day)
+        val day = numberFormatter.format(resolved.day.toLong())
+        val month = system.monthNames(resolved.year)[resolved.month - 1]
+        val year = numberFormatter.format(resolved.year.toLong())
         return if (type == CalendarType.Shamsi) {
             "$weekday $day $month $year"
         } else {
@@ -29,10 +31,11 @@ public object DateFormatter {
         date: ShamsiDate,
         type: CalendarType = CalendarType.Shamsi,
     ): String {
+        val resolved = date.toSystem(type.system)
         val numberFormatter = NumberFormatter.get(type)
-        val year = numberFormatter.format(date.year.toLong(), minDigits = 4)
-        val month = numberFormatter.format(date.month.toLong(), minDigits = 2)
-        val day = numberFormatter.format(date.day.toLong(), minDigits = 2)
+        val year = numberFormatter.format(resolved.year.toLong(), minDigits = 4)
+        val month = numberFormatter.format(resolved.month.toLong(), minDigits = 2)
+        val day = numberFormatter.format(resolved.day.toLong(), minDigits = 2)
         return "$year/$month/$day"
     }
 
