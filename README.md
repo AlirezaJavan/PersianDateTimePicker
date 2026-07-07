@@ -76,6 +76,7 @@ if (showDatePicker) {
         config = ShamsiDatePickerConfig(
             initialDate = selectedDate,
             style = ShamsiDatePickerStyle.Calendar, // or .Wheel
+            calendarType = CalendarType.Gregorian, // or .Shamsi (default)
         ),
     )
 }
@@ -201,6 +202,7 @@ ShamsiTimePickerConfig(
     initialTime: ShamsiTimeLimit = ShamsiTime.Now,
     minTime: ShamsiTimeLimit? = null,   // no lower bound if omitted
     maxTime: ShamsiTimeLimit? = null,   // no upper bound if omitted
+    calendarType: CalendarType = CalendarType.Shamsi,
 )
 ```
 
@@ -282,7 +284,7 @@ import io.github.alirezajavan.shamsipicker.calendar.CalendarType
 // Shamsi
 val shamsiLong = DateFormatter.long(date, CalendarType.Shamsi)   // چهارشنبه ۱ فروردین ۱۴۰۳
 // Gregorian
-val gregLong = DateFormatter.long(date, CalendarType.Gregorian) // Wednesday, March 20, 2024
+val gregLong = DateFormatter.long(date, CalendarType.Gregorian) // Wed, March 20, 2024
 ```
 
 ### Date Conversion
