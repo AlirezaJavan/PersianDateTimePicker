@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
-import io.github.alirezajavan.shamsipicker.format.PersianNumber
+import io.github.alirezajavan.shamsipicker.format.NumberFormatter
 import io.github.alirezajavan.shamsipicker.model.ShamsiTime
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRangePickerConfig
@@ -34,7 +34,7 @@ private const val RANGE_MINUTES_PER_DAY: Int = 24 * 60
 private const val RANGE_TIME_WHEEL_DIM_ALPHA = 0.4f
 
 /**
- * An iOS-style Shamsi time range picker dialog for selecting a "from" and "to" time.
+ * A time range picker dialog supporting both Shamsi (Persian digits) and Gregorian (Latin digits).
  *
  * Two wheel pickers are shown stacked vertically — one labeled "از" (from) and one "تا" (to).
  * If the user confirms with "from" > "to", the values are automatically swapped.
@@ -49,6 +49,8 @@ public fun ShamsiTimeRangePickerDialog(
     val initTo = remember { config.initialTo.toShamsiTime() }
     val resolvedMin = remember(config.minTime) { config.minTime?.toShamsiTime() }
     val resolvedMax = remember(config.maxTime) { config.maxTime?.toShamsiTime() }
+
+    val numberFormatter = remember(config.calendarType) { NumberFormatter.get(config.calendarType) }
 
     val context = LocalContext.current
     val is24h = DateFormat.is24HourFormat(context)
@@ -96,6 +98,7 @@ public fun ShamsiTimeRangePickerDialog(
                     is24h = is24h,
                     minTime = resolvedMin,
                     maxTime = resolvedMax,
+                    numberFormatter = numberFormatter,
                     onHourChange = { fromHour = it },
                     onMinuteChange = { fromMinute = it },
                 )
@@ -108,6 +111,7 @@ public fun ShamsiTimeRangePickerDialog(
                     is24h = is24h,
                     minTime = effectiveToMin,
                     maxTime = resolvedMax,
+                    numberFormatter = numberFormatter,
                     onHourChange = { toHour = it },
                     onMinuteChange = { toMinute = it },
                 )
@@ -123,6 +127,7 @@ private fun TimeWheelRow(
     is24h: Boolean,
     minTime: ShamsiTime?,
     maxTime: ShamsiTime?,
+    numberFormatter: NumberFormatter,
     onHourChange: (Int) -> Unit,
     onMinuteChange: (Int) -> Unit,
 ) {
@@ -159,7 +164,7 @@ private fun TimeWheelRow(
             WheelPicker(
                 itemCount = 24,
                 initialIndex = initialHour,
-                label = { PersianNumber.toPersianDigits(it.toString().padStart(2, '0')) },
+                label = { numberFormatter.format(it.toLong(), minDigits = 2) },
                 onSelectedIndexChange = { idx ->
                     hour24 = idx
                     onHourChange(idx)
@@ -178,7 +183,7 @@ private fun TimeWheelRow(
                 initialIndex = initialHourIndex,
                 label = {
                     val display = if (it == 0) 12 else it
-                    PersianNumber.toPersianDigits(display.toString().padStart(2, '0'))
+                    numberFormatter.format(display.toLong(), minDigits = 2)
                 },
                 onSelectedIndexChange = { idx ->
                     hourIndex = idx
@@ -201,7 +206,7 @@ private fun TimeWheelRow(
         WheelPicker(
             itemCount = 60,
             initialIndex = initialMinute,
-            label = { PersianNumber.toPersianDigits(it.toString().padStart(2, '0')) },
+            label = { numberFormatter.format(it.toLong(), minDigits = 2) },
             onSelectedIndexChange = { min ->
                 minute = min
                 onMinuteChange(min)

@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
-import io.github.alirezajavan.shamsipicker.format.PersianNumber
+import io.github.alirezajavan.shamsipicker.format.NumberFormatter
 import io.github.alirezajavan.shamsipicker.model.ShamsiTime
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeLimit
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimePickerConfig
@@ -31,14 +31,10 @@ import io.github.alirezajavan.shamsipicker.model.ShamsiTimePickerConfig
 private const val MINUTES_PER_DAY: Int = 24 * 60
 
 /**
- * An iOS-style Shamsi time picker dialog.
+ * A time picker dialog supporting both Shamsi (Persian digits) and Gregorian (Latin digits).
  *
- * Use [ShamsiTimePickerConfig] to set the initial time and optional time bounds.
- * All time fields in the config accept any [ShamsiTimeLimit]:
- * - `ShamsiTime(8, 30)` — a fixed time
- * - `ShamsiTime.Now` / `ShamsiTimeLimit.Now` — current time, resolved at open time
- * - `LocalTime.of(9, 0).asLimit()` — a fixed Gregorian time
- * - `LocalTime.now().asLimit()` — current system time, resolved at open time
+ * Use [ShamsiTimePickerConfig] to set the initial time, optional time bounds,
+ * and calendar type.
  */
 @Composable
 public fun ShamsiTimePickerDialog(
@@ -52,6 +48,8 @@ public fun ShamsiTimePickerDialog(
 
     val resolvedMin = remember(config.minTime) { config.minTime?.toShamsiTime() }
     val resolvedMax = remember(config.maxTime) { config.maxTime?.toShamsiTime() }
+
+    val numberFormatter = remember(config.calendarType) { NumberFormatter.get(config.calendarType) }
 
     val context = LocalContext.current
     val is24h = DateFormat.is24HourFormat(context)
@@ -97,7 +95,7 @@ public fun ShamsiTimePickerDialog(
                     WheelPicker(
                         itemCount = 24,
                         initialIndex = initialHour,
-                        label = { PersianNumber.toPersianDigits(it.toString().padStart(2, '0')) },
+                        label = { numberFormatter.format(it.toLong(), minDigits = 2) },
                         onSelectedIndexChange = { hour24 = it },
                         enabledRange = hMin..hMax,
                         modifier = Modifier.width(72.dp),
@@ -111,7 +109,7 @@ public fun ShamsiTimePickerDialog(
                         initialIndex = initialHourIndex,
                         label = {
                             val display = if (it == 0) 12 else it
-                            PersianNumber.toPersianDigits(display.toString().padStart(2, '0'))
+                            numberFormatter.format(display.toLong(), minDigits = 2)
                         },
                         onSelectedIndexChange = { hourIndex = it },
                         enabledRange = hourEnabled,
@@ -129,7 +127,7 @@ public fun ShamsiTimePickerDialog(
                 WheelPicker(
                     itemCount = 60,
                     initialIndex = initialMinute,
-                    label = { PersianNumber.toPersianDigits(it.toString().padStart(2, '0')) },
+                    label = { numberFormatter.format(it.toLong(), minDigits = 2) },
                     onSelectedIndexChange = { minute = it },
                     enabledRange = minuteRange,
                     modifier = Modifier.width(64.dp),

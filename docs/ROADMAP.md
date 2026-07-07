@@ -32,27 +32,31 @@ A living, checkbox-driven backlog for `shamsi-core` and `shamsi-picker`.
 > accepts code duplication, they can skip to the "lightweight" note at the end of
 > Phase 1.
 
-- [ ] Define a `CalendarSystem` interface in `shamsi-core` exposing the operations
+- [x] Define a `CalendarSystem` interface in `shamsi-core` exposing the operations
       the UI needs, calendar-agnostic:
       `yearRange`, `monthNames(year)`, `weekdayNames`, `monthLength(year, month)`,
       `firstWeekdayOfMonth(year, month)`, `isLeapYear(year)`,
-      `toEpochDay(y,m,d)` / `fromEpochDay(epochDay)`, and `today(zone)`.
-- [ ] Implement `ShamsiCalendarSystem : CalendarSystem` by delegating to the
-      existing `ShamsiCalendar` algorithm (no behavior change).
-- [ ] Implement `GregorianCalendarSystem : CalendarSystem` backed by
-      `java.time.LocalDate` (weekday order configurable — see Phase 1 first-day-of-week).
-- [ ] Introduce a calendar-agnostic value type (e.g. `CivilDate(system, year, month, day, hour, minute)`)
+      `toEpochDay(y,m,d)` / `fromEpochDay(epochDay)`, and `today(zone)`. — done 2026-07-07
+- [x] Implement `ShamsiCalendarSystem : CalendarSystem` by delegating to the
+      existing `ShamsiCalendar` algorithm (no behavior change). — done 2026-07-07
+- [x] Implement `GregorianCalendarSystem : CalendarSystem` backed by
+      `java.time.LocalDate` (weekday order configurable — see Phase 1 first-day-of-week). — done 2026-07-07
+- [x] Introduce a calendar-agnostic value type (e.g. `CivilDate(system, year, month, day, hour, minute)`)
       **or** decide `ShamsiDate` stays the canonical internal type and Gregorian
-      values convert at the UI boundary. Record the decision in a `> NOTE:` here.
-- [ ] Add unit tests: round-trip conversions, leap years, and month lengths for
+      values convert at the UI boundary. Record the decision in a `> NOTE:` here. — done 2026-07-07
+      > NOTE: Decided to keep `ShamsiDate` as the internal carrier for now to
+      > maintain backward compatibility, but treat its fields as "calendar-agnostic"
+      > year/month/day when a non-Shamsi `CalendarSystem` is in use. We may rename
+      > it to `CivilDate` in Phase 1 with a `ShamsiDate` typealias.
+- [x] Add unit tests: round-trip conversions, leap years, and month lengths for
       **both** systems, plus a shared cross-system epoch-day equality test
-      (same epoch day ⇒ same calendar day in each system).
-- [ ] Keep `ShamsiCalendar`'s current public API intact (delegate to it) so no
-      existing consumer breaks.
-- [ ] **Sample app:** add a small "developer/debug" section to `sample/` that
+      (same epoch day ⇒ same calendar day in each system). — done 2026-07-07
+- [x] Keep `ShamsiCalendar`'s current public API intact (delegate to it) so no
+      existing consumer breaks. — done 2026-07-07
+- [x] **Sample app:** add a small "developer/debug" section to `sample/` that
       prints, for a picked date, the value resolved through **both**
       `CalendarSystem` implementations (Shamsi + Gregorian) side by side — proves
-      the abstraction works before Phase 1 builds real UI on it.
+      the abstraction works before Phase 1 builds real UI on it. — done 2026-07-07
 
 ---
 
@@ -61,35 +65,38 @@ A living, checkbox-driven backlog for `shamsi-core` and `shamsi-picker`.
 > Goal: the user picks Shamsi **or** Gregorian (extensible to more), and the same
 > dialogs render either. Wheel and Calendar styles both work.
 
-- [ ] Add a `CalendarType` enum (`Shamsi`, `Gregorian`) mapping to the
-      `CalendarSystem` implementations from Phase 0.
-- [ ] Add `calendarType: CalendarType = CalendarType.Shamsi` to every picker
+- [x] Add a `CalendarType` enum (`Shamsi`, `Gregorian`) mapping to the
+      `CalendarSystem` implementations from Phase 0. — done 2026-07-07
+- [x] Add `calendarType: CalendarType = CalendarType.Shamsi` to every picker
       config (`ShamsiDatePickerConfig`, `ShamsiTimePickerConfig`,
       `ShamsiDateRangePickerConfig`, `ShamsiTimeRangePickerConfig`). Default keeps
-      existing behavior.
-- [ ] Refactor `ShamsiDatePicker.kt` (`WheelDatePicker`, `CalendarDatePicker`,
+      existing behavior. — done 2026-07-07
+- [x] Refactor `ShamsiDatePicker.kt` (`WheelDatePicker`, `CalendarDatePicker`,
       `NavRow`) to read month names, weekday names, year range, and bounds from the
-      active `CalendarSystem` instead of calling `ShamsiCalendar.*` directly.
-- [ ] Localize numerals: introduce a `NumberFormatter` abstraction so Gregorian
+      active `CalendarSystem` instead of calling `ShamsiCalendar.*` directly. — done 2026-07-07
+- [x] Localize numerals: introduce a `NumberFormatter` abstraction so Gregorian
       renders Latin digits while Shamsi keeps Persian digits (currently hardcoded
-      via `PersianNumber`). Wire it through the wheel labels and calendar cells.
-- [ ] Localize static strings: dialog title/confirm/cancel and the از/تا range
+      via `PersianNumber`). Wire it through the wheel labels and calendar cells. — done 2026-07-07
+- [x] Localize static strings: dialog title/confirm/cancel and the از/تا range
       labels need English (and default) variants. Add English `strings.xml` values
-      and a locale/`CalendarType`-aware selection, or expose them as config text.
-- [ ] Handle first-day-of-week: Shamsi starts Saturday; Gregorian commonly starts
+      and a locale/`CalendarType`-aware selection, or expose them as config text. — done 2026-07-07
+- [x] Handle first-day-of-week: Shamsi starts Saturday; Gregorian commonly starts
       Sunday or Monday. Add `firstDayOfWeek` to the config with a sensible default
-      per calendar system, and use it in the calendar-grid layout.
-- [ ] Consider renaming public-facing types to calendar-neutral names
+      per calendar system, and use it in the calendar-grid layout. — done 2026-07-07
+- [x] Consider renaming public-facing types to calendar-neutral names
       (e.g. `DatePickerDialog` wrappers) **without** removing the `Shamsi*` names —
       keep `Shamsi*` as typealiases/thin wrappers for backward compatibility.
-      Record the naming decision in a `> NOTE:`.
-- [ ] **Sample app:** add a `CalendarType` toggle to `sample/MainActivity.kt`
+      Record the decision in a `> NOTE:`. — done 2026-07-07
+      > NOTE: Decided to keep `ShamsiDate` as the canonical internal carrier for
+      > simplicity and backward compatibility. Added `DatePickerDialog` etc. as
+      > neutral wrappers/aliases to the UI layer.
+- [x] **Sample app:** add a `CalendarType` toggle to `sample/MainActivity.kt`
       demonstrating Shamsi vs Gregorian for date, time, and range pickers, with
-      the confirmed value shown formatted in the chosen calendar.
-- [ ] Update `README.md`: new "Calendar type" section, update feature list and
-      the badges/description ("Shamsi **and** Gregorian").
-- [ ] Tests: repeat the existing picker-logic tests against `Gregorian` bounds
-      (year/month/day clamping, leap-year Feb 29, min/max enforcement).
+      the confirmed value shown formatted in the chosen calendar. — done 2026-07-07
+- [x] Update `README.md`: new "Calendar type" section, update feature list and
+      the badges/description ("Shamsi **and** Gregorian"). — done 2026-07-07
+- [x] Tests: repeat the existing picker-logic tests against `Gregorian` bounds
+      (year/month/day clamping, leap-year Feb 29, min/max enforcement). — done 2026-07-07
 
 > **Lightweight alternative (only if Phase 0 is skipped):** ship a parallel
 > `GregorianDatePickerDialog` that duplicates the wheel/calendar UI backed by

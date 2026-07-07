@@ -6,7 +6,7 @@
 [![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)](https://android-arsenal.com/api?level=26)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-A modern, highly customizable Shamsi (Persian/Jalali) date and time picker library for Jetpack Compose, built on a pure-Kotlin core.
+A modern, highly customizable Shamsi (Persian) and Gregorian date and time picker library for Jetpack Compose, built on a pure-Kotlin core.
 
 ## Project Structure
 
@@ -17,14 +17,16 @@ This project is split into two modules:
 
 ## Features
 
+- **Multi-Calendar Support**: Pick between **Shamsi** and **Gregorian** calendars using the same UI components.
 - **ShamsiDatePickerDialog**: Supports both Wheel (iOS-style) and Calendar (grid) styles.
 - **ShamsiTimePickerDialog**: iOS-style infinite spinning wheel for hours and minutes.
-- **ShamsiDateRangePickerDialog**: Pick a from→to date range in Wheel or Calendar style. Calendar mode renders a Material-style color strip across the selected range; Wheel mode enforces that "to" is always ≥ "from".
-- **ShamsiTimeRangePickerDialog**: Pick a from→to time range with two stacked wheel rows. The "to" wheel minimum is always clamped to the current "from" time.
+- **ShamsiDateRangePickerDialog**: Pick a from→to date range in Wheel or Calendar style.
+- **ShamsiTimeRangePickerDialog**: Pick a from→to time range with two stacked wheel rows.
 - **Limit Aware**: Set dynamic boundaries (e.g. `ShamsiDate.Now`) or fixed limits (Gregorian or Shamsi).
-- **Leap Year Aware**: Automatically handles 29/30 day Esfand.
-- **Persian Formatting**: Built-in formatters for long/short date and time strings.
-- **Modern API**: Clean configuration objects and `java.time` interoperability.
+- **Localization Aware**: Automatically handles Persian/English month names, weekday names, and numerals (Persian vs Latin digits).
+- **Customizable Week Start**: Configure the first day of the week (defaults to Saturday for Shamsi, Sunday for Gregorian).
+- **Leap Year Aware**: Automatically handles 29/30 day Esfand and Feb 29.
+- **Persian & Latin Formatting**: Built-in formatters for long/short date and time strings.
 
 ## Screenshots
 
@@ -165,6 +167,8 @@ ShamsiDatePickerConfig(
     minDate: ShamsiDateLimit? = null,    // no lower bound if omitted
     maxDate: ShamsiDateLimit? = null,    // no upper bound if omitted
     style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
+    calendarType: CalendarType = CalendarType.Shamsi,
+    firstDayOfWeek: DayOfWeek? = null,   // null = use calendar system default
 )
 ```
 
@@ -222,11 +226,13 @@ ShamsiTimePickerConfig(
 ### Formatting
 
 ```kotlin
-import io.github.alirezajavan.shamsipicker.format.ShamsiDateFormatter
+import io.github.alirezajavan.shamsipicker.format.DateFormatter
+import io.github.alirezajavan.shamsipicker.calendar.CalendarType
 
-val longDate = ShamsiDateFormatter.long(selectedDate)   // چهارشنبه ۱ فروردین ۱۴۰۳
-val shortDate = ShamsiDateFormatter.short(selectedDate) // ۱۴۰۳/۰۱/۰۱
-val time = ShamsiDateFormatter.time(selectedDate)       // ۱۳:۴۵
+// Shamsi
+val shamsiLong = DateFormatter.long(date, CalendarType.Shamsi)   // چهارشنبه ۱ فروردین ۱۴۰۳
+// Gregorian
+val gregLong = DateFormatter.long(date, CalendarType.Gregorian) // Wednesday, March 20, 2024
 ```
 
 ### Date Conversion

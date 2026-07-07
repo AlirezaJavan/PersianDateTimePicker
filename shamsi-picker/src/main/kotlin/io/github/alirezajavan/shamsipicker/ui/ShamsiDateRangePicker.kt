@@ -37,8 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.R
-import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
-import io.github.alirezajavan.shamsipicker.format.PersianNumber
+import io.github.alirezajavan.shamsipicker.calendar.CalendarSystem
+import io.github.alirezajavan.shamsipicker.format.NumberFormatter
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRange
@@ -47,13 +47,10 @@ import io.github.alirezajavan.shamsipicker.model.ShamsiDateRangePickerConfig
 private const val RANGE_WHEEL_DIM_ALPHA = 0.4f
 
 /**
- * A fully Persian/Shamsi date range picker dialog for selecting a "from" and "to" date.
+ * A date range picker dialog supporting both Shamsi and Gregorian calendars.
  *
- * In [ShamsiDatePickerStyle.Calendar] mode the user first taps to set the start date, then taps
- * again to set the end date. The selected range is highlighted with a colored strip connecting
- * the two endpoints. Tapping a third time starts a new selection.
- * In [ShamsiDatePickerStyle.Wheel] mode two compact wheel drums are displayed stacked vertically —
- * one labeled "تاریخ شروع" (from) and one "تاریخ پایان" (to).
+ * Use [ShamsiDateRangePickerConfig] to set the initial range, optional date bounds,
+ * display style, and calendar type.
  */
 @Composable
 public fun ShamsiDateRangePickerDialog(
@@ -70,19 +67,26 @@ public fun ShamsiDateRangePickerDialog(
     val resolvedMin = remember(config.minDate) { config.minDate?.toShamsiDate() }
     val resolvedMax = remember(config.maxDate) { config.maxDate?.toShamsiDate() }
 
+    val calendarSystem = remember(config.calendarType) { config.calendarType.system }
+    val numberFormatter = remember(config.calendarType) { NumberFormatter.get(config.calendarType) }
+    val firstDayOfWeek =
+        remember(config.firstDayOfWeek, calendarSystem) {
+            config.firstDayOfWeek ?: calendarSystem.defaultFirstDayOfWeek
+        }
+
     var currentStyle by remember { mutableStateOf(config.style) }
 
     // Wheel mode state
-    var fromYear by remember { mutableIntStateOf(initFrom.year.coerceIn(ShamsiCalendar.YEAR_RANGE)) }
+    var fromYear by remember { mutableIntStateOf(initFrom.year.coerceIn(calendarSystem.yearRange)) }
     var fromMonth by remember { mutableIntStateOf(initFrom.month) }
     var fromDay by remember { mutableIntStateOf(initFrom.day) }
-    var toYear by remember { mutableIntStateOf(initTo.year.coerceIn(ShamsiCalendar.YEAR_RANGE)) }
+    var toYear by remember { mutableIntStateOf(initTo.year.coerceIn(calendarSystem.yearRange)) }
     var toMonth by remember { mutableIntStateOf(initTo.month) }
     var toDay by remember { mutableIntStateOf(initTo.day) }
 
     // Clamp "from" to global bounds
-    val fromMaxDay = ShamsiCalendar.monthLength(fromYear, fromMonth)
-    val fromDayBounds = ShamsiCalendar.dayBounds(fromYear, fromMonth, fromMaxDay, resolvedMin, resolvedMax)
+    val fromMaxDay = calendarSystem.monthLength(fromYear, fromMonth)
+    val fromDayBounds = calendarSystem.dayBounds(fromYear, fromMonth, fromMaxDay, resolvedMin, resolvedMax)
     if (fromDay > fromDayBounds.last) fromDay = fromDayBounds.last
     if (fromDay < fromDayBounds.first) fromDay = fromDayBounds.first
 
@@ -91,15 +95,15 @@ public fun ShamsiDateRangePickerDialog(
     val effectiveToMin: ShamsiDate =
         if (resolvedMin != null && resolvedMin > fromAsDate) resolvedMin else fromAsDate
 
-    val effectiveToMinYear = effectiveToMin.year.coerceIn(ShamsiCalendar.YEAR_RANGE)
+    val effectiveToMinYear = effectiveToMin.year.coerceIn(calendarSystem.yearRange)
     if (toYear < effectiveToMinYear) toYear = effectiveToMinYear
 
-    val toMonthBounds = ShamsiCalendar.monthBounds(toYear, effectiveToMin, resolvedMax)
+    val toMonthBounds = calendarSystem.monthBounds(toYear, effectiveToMin, resolvedMax)
     if (toMonth < toMonthBounds.first) toMonth = toMonthBounds.first
     if (toMonth > toMonthBounds.last) toMonth = toMonthBounds.last
 
-    val toMaxDay = ShamsiCalendar.monthLength(toYear, toMonth)
-    val toDayBounds = ShamsiCalendar.dayBounds(toYear, toMonth, toMaxDay, effectiveToMin, resolvedMax)
+    val toMaxDay = calendarSystem.monthLength(toYear, toMonth)
+    val toDayBounds = calendarSystem.dayBounds(toYear, toMonth, toMaxDay, effectiveToMin, resolvedMax)
     if (toDay > toDayBounds.last) toDay = toDayBounds.last
     if (toDay < toDayBounds.first) toDay = toDayBounds.first
 
@@ -146,9 +150,11 @@ public fun ShamsiDateRangePickerDialog(
                     toDay = toDay,
                     toMaxDay = toMaxDay,
                     toDayBounds = toDayBounds,
-                    fromMinDate = resolvedMin,
+                    minDate = resolvedMin,
                     maxDate = resolvedMax,
                     toMinDate = effectiveToMin,
+                    calendarSystem = calendarSystem,
+                    numberFormatter = numberFormatter,
                     onFromYear = { fromYear = it },
                     onFromMonth = { fromMonth = it },
                     onFromDay = { fromDay = it },
@@ -166,6 +172,9 @@ public fun ShamsiDateRangePickerDialog(
                     viewMonth = viewMonth,
                     minDate = resolvedMin,
                     maxDate = resolvedMax,
+                    calendarSystem = calendarSystem,
+                    numberFormatter = numberFormatter,
+                    firstDayOfWeek = firstDayOfWeek,
                     onDayTap = { day ->
                         val tapped = ShamsiDate(viewYear, viewMonth, day)
                         if (toDate != null) {
@@ -183,8 +192,8 @@ public fun ShamsiDateRangePickerDialog(
                     onViewYear = {
                         viewYear =
                             it.coerceIn(
-                                ShamsiCalendar.YEAR_RANGE.first,
-                                ShamsiCalendar.YEAR_RANGE.last,
+                                calendarSystem.yearRange.first,
+                                calendarSystem.yearRange.last,
                             )
                     },
                     onViewMonth = { viewMonth = it },
@@ -206,9 +215,11 @@ private fun WheelDateRangePicker(
     toDay: Int,
     toMaxDay: Int,
     toDayBounds: IntRange,
-    fromMinDate: ShamsiDate?,
+    minDate: ShamsiDate?,
     maxDate: ShamsiDate?,
     toMinDate: ShamsiDate,
+    calendarSystem: CalendarSystem,
+    numberFormatter: NumberFormatter,
     onFromYear: (Int) -> Unit,
     onFromMonth: (Int) -> Unit,
     onFromDay: (Int) -> Unit,
@@ -226,8 +237,10 @@ private fun WheelDateRangePicker(
             day = fromDay,
             maxDay = fromMaxDay,
             dayBounds = fromDayBounds,
-            minDate = fromMinDate,
+            minDate = minDate,
             maxDate = maxDate,
+            calendarSystem = calendarSystem,
+            numberFormatter = numberFormatter,
             onYear = onFromYear,
             onMonth = onFromMonth,
             onDay = onFromDay,
@@ -241,6 +254,8 @@ private fun WheelDateRangePicker(
             dayBounds = toDayBounds,
             minDate = toMinDate,
             maxDate = maxDate,
+            calendarSystem = calendarSystem,
+            numberFormatter = numberFormatter,
             onYear = onToYear,
             onMonth = onToMonth,
             onDay = onToDay,
@@ -257,11 +272,13 @@ private fun CompactWheelDateRow(
     dayBounds: IntRange,
     minDate: ShamsiDate?,
     maxDate: ShamsiDate?,
+    calendarSystem: CalendarSystem,
+    numberFormatter: NumberFormatter,
     onYear: (Int) -> Unit,
     onMonth: (Int) -> Unit,
     onDay: (Int) -> Unit,
 ) {
-    val months = ShamsiCalendar.monthBounds(year, minDate, maxDate)
+    val months = calendarSystem.monthBounds(year, minDate, maxDate)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -271,7 +288,7 @@ private fun CompactWheelDateRow(
             WheelPicker(
                 itemCount = maxDay,
                 initialIndex = (day - 1).coerceIn(0, maxDay - 1),
-                label = { PersianNumber.toPersianDigits((it + 1).toLong()) },
+                label = { numberFormatter.format((it + 1).toLong()) },
                 onSelectedIndexChange = { onDay(it + 1) },
                 enabledRange = (dayBounds.first - 1)..<dayBounds.last,
                 visibleCount = 3,
@@ -282,7 +299,7 @@ private fun CompactWheelDateRow(
         WheelPicker(
             itemCount = 12,
             initialIndex = month - 1,
-            label = { ShamsiCalendar.monthName(it + 1) },
+            label = { calendarSystem.monthNames(year)[it] },
             onSelectedIndexChange = { onMonth(it + 1) },
             enabledRange = (months.first - 1)..<months.last,
             visibleCount = 3,
@@ -290,12 +307,12 @@ private fun CompactWheelDateRow(
             modifier = Modifier.width(116.dp),
         )
         WheelPicker(
-            itemCount = ShamsiCalendar.YEAR_RANGE.count(),
-            initialIndex = year - ShamsiCalendar.YEAR_RANGE.first,
-            label = { PersianNumber.toPersianDigits((ShamsiCalendar.YEAR_RANGE.first + it).toLong()) },
-            onSelectedIndexChange = { onYear(ShamsiCalendar.YEAR_RANGE.first + it) },
+            itemCount = calendarSystem.yearRange.count(),
+            initialIndex = year - calendarSystem.yearRange.first,
+            label = { numberFormatter.format((calendarSystem.yearRange.first + it).toLong()) },
+            onSelectedIndexChange = { onYear(calendarSystem.yearRange.first + it) },
             infinite = false,
-            enabledRange = ShamsiCalendar.yearEnabledRange(ShamsiCalendar.YEAR_RANGE, minDate, maxDate),
+            enabledRange = calendarSystem.yearEnabledRange(minDate, maxDate),
             visibleCount = 3,
             dimAlpha = RANGE_WHEEL_DIM_ALPHA,
             modifier = Modifier.width(86.dp),
@@ -311,28 +328,29 @@ private fun CalendarDateRangePicker(
     viewMonth: Int,
     minDate: ShamsiDate?,
     maxDate: ShamsiDate?,
+    calendarSystem: CalendarSystem,
+    numberFormatter: NumberFormatter,
+    firstDayOfWeek: java.time.DayOfWeek,
     onDayTap: (Int) -> Unit,
     onViewYear: (Int) -> Unit,
     onViewMonth: (Int) -> Unit,
 ) {
-    val maxDay = ShamsiCalendar.monthLength(viewYear, viewMonth)
-    val days = ShamsiCalendar.dayBounds(viewYear, viewMonth, maxDay, minDate, maxDate)
+    val maxDay = calendarSystem.monthLength(viewYear, viewMonth)
+    val days = calendarSystem.dayBounds(viewYear, viewMonth, maxDay, minDate, maxDate)
 
     val afterMin = { y: Int, m: Int ->
         minDate == null ||
-            ShamsiCalendar.dateKey(ShamsiDate(y, m, 1)) >=
-            ShamsiCalendar.dateKey(ShamsiDate(minDate.year, minDate.month, 1))
+            (y * 100 + m) >= (minDate.year * 100 + minDate.month)
     }
     val beforeMax = { y: Int, m: Int ->
         maxDate == null ||
-            ShamsiCalendar.dateKey(ShamsiDate(y, m, 1)) <=
-            ShamsiCalendar.dateKey(ShamsiDate(maxDate.year, maxDate.month, 1))
+            (y * 100 + m) <= (maxDate.year * 100 + maxDate.month)
     }
     val prevMonth = if (viewMonth == 1) (viewYear - 1) to 12 else viewYear to (viewMonth - 1)
     val nextMonth = if (viewMonth == 12) (viewYear + 1) to 1 else viewYear to (viewMonth + 1)
 
-    val fromKey = ShamsiCalendar.dateKey(fromDate)
-    val toKey = toDate?.let { ShamsiCalendar.dateKey(it) }
+    val fromKey = fromDate.year * 10000 + fromDate.month * 100 + fromDate.day
+    val toKey = toDate?.let { it.year * 10000 + it.month * 100 + it.day }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -340,7 +358,7 @@ private fun CalendarDateRangePicker(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         NavRow(
-            label = ShamsiCalendar.monthName(viewMonth),
+            label = calendarSystem.monthNames(viewYear)[viewMonth - 1],
             contentDescriptionPrev = stringResource(R.string.shamsi_date_picker_prev_month),
             contentDescriptionNext = stringResource(R.string.shamsi_date_picker_next_month),
             prevEnabled = afterMin(prevMonth.first, prevMonth.second),
@@ -355,7 +373,7 @@ private fun CalendarDateRangePicker(
             },
         )
         NavRow(
-            label = PersianNumber.toPersianDigits(viewYear.toLong()),
+            label = numberFormatter.format(viewYear.toLong()),
             contentDescriptionPrev = stringResource(R.string.shamsi_date_picker_prev_year),
             contentDescriptionNext = stringResource(R.string.shamsi_date_picker_next_year),
             prevEnabled = minDate == null || viewYear - 1 >= minDate.year,
@@ -365,7 +383,7 @@ private fun CalendarDateRangePicker(
         )
 
         Row(modifier = Modifier.fillMaxWidth()) {
-            for (name in ShamsiCalendar.WEEKDAY_NAMES) {
+            for (name in calendarSystem.weekdayNames(firstDayOfWeek)) {
                 Text(
                     text = name.take(1),
                     modifier = Modifier.weight(1f),
@@ -376,8 +394,7 @@ private fun CalendarDateRangePicker(
             }
         }
 
-        val firstWeekday =
-            ShamsiCalendar.WEEKDAY_NAMES.indexOf(ShamsiCalendar.weekdayName(ShamsiDate(viewYear, viewMonth, 1)))
+        val firstWeekday = calendarSystem.firstWeekdayOfMonth(viewYear, viewMonth, firstDayOfWeek)
         val cells = firstWeekday + maxDay
         val rows = (cells + 6) / 7
         // No row spacing: the strip (38dp) in each 44dp cell provides natural visual separation.
@@ -388,7 +405,7 @@ private fun CalendarDateRangePicker(
                         val dayNumber = row * 7 + col - firstWeekday + 1
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                             if (dayNumber in 1..maxDay) {
-                                val cellKey = ShamsiCalendar.dateKey(ShamsiDate(viewYear, viewMonth, dayNumber))
+                                val cellKey = viewYear * 10000 + viewMonth * 100 + dayNumber
                                 val isFrom = cellKey == fromKey
                                 val isTo = toKey != null && cellKey == toKey
                                 val isInRange = toKey != null && cellKey > fromKey && cellKey < toKey
@@ -398,6 +415,7 @@ private fun CalendarDateRangePicker(
                                     isTo = isTo,
                                     isInRange = isInRange,
                                     enabled = dayNumber in days,
+                                    numberFormatter = numberFormatter,
                                     onClick = { onDayTap(dayNumber) },
                                 )
                             }
@@ -434,6 +452,7 @@ private fun RangeDayCell(
     isTo: Boolean,
     isInRange: Boolean,
     enabled: Boolean,
+    numberFormatter: NumberFormatter,
     onClick: () -> Unit,
 ) {
     val primary = MaterialTheme.colorScheme.primary
@@ -500,7 +519,7 @@ private fun RangeDayCell(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = PersianNumber.toPersianDigits(day.toLong()),
+                text = numberFormatter.format(day.toLong()),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = if (isFrom || isTo) FontWeight.Bold else FontWeight.Normal,
                 color =

@@ -1,5 +1,8 @@
 package io.github.alirezajavan.shamsipicker.model
 
+import io.github.alirezajavan.shamsipicker.calendar.CalendarType
+import java.time.DayOfWeek
+
 /**
  * Configuration for [io.github.alirezajavan.shamsipicker.ui.ShamsiDateRangePickerDialog].
  *
@@ -15,4 +18,6 @@ public data class ShamsiDateRangePickerConfig(
     val minDate: ShamsiDateLimit? = null,
     val maxDate: ShamsiDateLimit? = null,
     val style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
+    val calendarType: CalendarType = CalendarType.Shamsi,
+    val firstDayOfWeek: DayOfWeek? = null,
 )

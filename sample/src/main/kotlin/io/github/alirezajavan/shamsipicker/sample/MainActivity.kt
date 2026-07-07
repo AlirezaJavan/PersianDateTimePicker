@@ -6,10 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -25,8 +27,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.alirezajavan.shamsipicker.calendar.CalendarType
+import io.github.alirezajavan.shamsipicker.calendar.GregorianCalendarSystem
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
-import io.github.alirezajavan.shamsipicker.format.ShamsiDateFormatter
+import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendarSystem
+import io.github.alirezajavan.shamsipicker.format.DateFormatter
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
@@ -55,6 +60,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SampleScreen() {
+    var calendarType by remember { mutableStateOf(CalendarType.Shamsi) }
+
     var selectedDate by remember { mutableStateOf(ShamsiCalendar.now()) }
     var selectedDateRange by remember { mutableStateOf<ShamsiDateRange?>(null) }
     var selectedTimeRange by remember { mutableStateOf<ShamsiTimeRange?>(null) }
@@ -81,6 +88,22 @@ fun SampleScreen() {
                 style = MaterialTheme.typography.headlineMedium,
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.RadioButton(
+                    selected = calendarType == CalendarType.Shamsi,
+                    onClick = { calendarType = CalendarType.Shamsi },
+                )
+                Text("Shamsi")
+                Spacer(modifier = Modifier.width(16.dp))
+                androidx.compose.material3.RadioButton(
+                    selected = calendarType == CalendarType.Gregorian,
+                    onClick = { calendarType = CalendarType.Gregorian },
+                )
+                Text("Gregorian")
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
             // ── Single pickers ────────────────────────────────────────────────
@@ -88,11 +111,11 @@ fun SampleScreen() {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Date: ${ShamsiDateFormatter.long(selectedDate)}",
+                text = "Date: ${DateFormatter.long(selectedDate, calendarType)}",
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
-                text = "Time: ${ShamsiDateFormatter.time(selectedDate)}",
+                text = "Time: ${DateFormatter.time(selectedDate, calendarType)}",
                 style = MaterialTheme.typography.bodyLarge,
             )
 
@@ -112,7 +135,7 @@ fun SampleScreen() {
 
             val dateRangeText =
                 selectedDateRange?.let {
-                    "${ShamsiDateFormatter.short(it.from)}  →  ${ShamsiDateFormatter.short(it.to)}"
+                    "${DateFormatter.short(it.from, calendarType)}  →  ${DateFormatter.short(it.to, calendarType)}"
                 } ?: "—"
             Text(
                 text = "Date Range: $dateRangeText",
@@ -121,7 +144,7 @@ fun SampleScreen() {
 
             val timeRangeText =
                 selectedTimeRange?.let {
-                    fun fmt(t: ShamsiTime) = ShamsiDateFormatter.time(ShamsiDate(1403, 1, 1, t.hour, t.minute))
+                    fun fmt(t: ShamsiTime) = DateFormatter.time(ShamsiDate(1403, 1, 1, t.hour, t.minute), calendarType)
                     "${fmt(it.from)}  →  ${fmt(it.to)}"
                 } ?: "—"
             Text(
@@ -140,6 +163,31 @@ fun SampleScreen() {
             }
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = { showTimeRangePicker = true }) { Text("Open Time Range Picker") }
+
+            Spacer(modifier = Modifier.height(32.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // ── Debug section ──────────────────────────────────────────────
+            Text("Calendar Abstraction Debug", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            val epochDay = ShamsiCalendarSystem.toEpochDay(selectedDate.year, selectedDate.month, selectedDate.day)
+            val (gy, gm, gd) = GregorianCalendarSystem.fromEpochDay(epochDay)
+            val (sy, sm, sd) = ShamsiCalendarSystem.fromEpochDay(epochDay)
+
+            Text(
+                text = "Selected Date (Shamsi): ${selectedDate.year}/${selectedDate.month}/${selectedDate.day}",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "Resolved Gregorian: $gy/$gm/$gd",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "Resolved Shamsi: $sy/$sm/$sd",
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
     }
 
@@ -156,6 +204,7 @@ fun SampleScreen() {
                 ShamsiDatePickerConfig(
                     initialDate = selectedDate,
                     style = ShamsiDatePickerStyle.Calendar,
+                    calendarType = calendarType,
                 ),
         )
     }
@@ -167,7 +216,11 @@ fun SampleScreen() {
                 showTimePicker = false
             },
             onDismiss = { showTimePicker = false },
-            config = ShamsiTimePickerConfig(initialTime = selectedDate.toTime()),
+            config =
+                ShamsiTimePickerConfig(
+                    initialTime = selectedDate.toTime(),
+                    calendarType = calendarType,
+                ),
         )
     }
 
@@ -185,6 +238,7 @@ fun SampleScreen() {
                     initialFrom = selectedDateRange?.from ?: ShamsiCalendar.now(),
                     initialTo = selectedDateRange?.to ?: ShamsiCalendar.now(),
                     style = style,
+                    calendarType = calendarType,
                 ),
         )
     }
@@ -200,6 +254,7 @@ fun SampleScreen() {
                 ShamsiTimeRangePickerConfig(
                     initialFrom = selectedTimeRange?.from ?: ShamsiCalendar.now().toTime(),
                     initialTo = selectedTimeRange?.to ?: ShamsiCalendar.now().toTime(),
+                    calendarType = calendarType,
                 ),
         )
     }
