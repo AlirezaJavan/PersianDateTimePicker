@@ -299,7 +299,6 @@ internal fun PickerDialogScaffold(
     header: (@Composable () -> Unit)? = null,
     body: @Composable () -> Unit,
 ) {
-    val configuration = LocalConfiguration.current
     val screenHeight = LocalWindowInfo.current.containerSize.height.dp
 
     Dialog(
