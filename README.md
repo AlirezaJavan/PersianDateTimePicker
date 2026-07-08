@@ -52,14 +52,14 @@ Add the following to your `build.gradle.kts`:
 ```kotlin
 dependencies {
     // Includes shamsi-core automatically
-    implementation("io.github.alirezajavan:shamsi-picker:1.4.0")
+    implementation("io.github.alirezajavan:shamsi-picker:1.5.0")
 }
 ```
 
 ### JVM / Non-UI
 ```kotlin
 dependencies {
-    implementation("io.github.alirezajavan:shamsi-core:1.4.0")
+    implementation("io.github.alirezajavan:shamsi-core:1.5.0")
 }
 ```
 
