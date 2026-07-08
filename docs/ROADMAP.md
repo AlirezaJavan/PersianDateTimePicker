@@ -163,16 +163,43 @@ A living, checkbox-driven backlog for `shamsi-core` and `shamsi-picker`.
 > Frequently requested for Persian calendars: Iranian official holidays + custom
 > app events visually marked on the grid.
 
-- [ ] Add a `CalendarEvent`/`ShamsiHoliday` model (date + label + optional color).
-- [ ] Add optional `events: List<CalendarEvent>` to the date picker config
-      (Calendar style).
-- [ ] Render a marker dot/underline on matching `DayCell`s; expose the label via
-      `contentDescription` (ties into Phase 6).
+- [x] Add a `CalendarEvent`/`ShamsiHoliday` model (date + label + optional color). — done 2026-07-08
+      > NOTE: `CalendarEvent(date: ShamsiDate, label: String, type: CalendarEventType = Event,
+      > colorArgb: Int? = null)` lives in `shamsi-core`. Uses a packed ARGB `Int` instead of a
+      > Compose `Color` to keep `colorArgb` out of `androidx.*`; the UI layer converts it to
+      > `Color` when rendering. Follow-up (2026-07-08, same-day feedback): a plain dot wasn't
+      > visible enough, and there was no way to distinguish "day off" holidays from
+      > lower-weight important events, nor any built-in weekend marking. Added
+      > `CalendarEventType { Holiday, Event }` — `Holiday` renders like a weekend (bold,
+      > colored day number); `Event` keeps the small dot. Also added
+      > `CalendarSystem.weekendDays`/`isWeekend()` (Thu/Fri for Shamsi, Sat/Sun for Gregorian)
+      > so fixed weekly days off are marked automatically without any `CalendarEvent` — this
+      > flows through everywhere `CalendarDatePicker`/`DayCell` is reused (date picker,
+      > date+time picker), not just where `events` is set.
+- [x] Add optional `events: List<CalendarEvent>` to the date picker config
+      (Calendar style). — done 2026-07-08
+- [x] Render a marker dot/underline on matching `DayCell`s; expose the label via
+      `contentDescription` (ties into Phase 6). — done 2026-07-08
+      > NOTE: `Holiday` events (and weekends) render as a bold `holidayTextColor` day
+      > number instead of a dot, for higher visibility; `Event` events keep the dot
+      > marker (`eventMarkerColor`). Both are new themable fields on `ShamsiPickerColors`.
+      > `contentDescription` combines event labels with a localized "Weekend" label when
+      > applicable (new `weekendDescription` on `ShamsiDatePickerStrings`/
+      > `ShamsiDateTimePickerStrings`/`ShamsiDateRangePickerStrings`). Follow-up
+      > (2026-07-08): extended the same weekend/holiday/event treatment to the range
+      > picker's `RangeDayCell` — added `events: List<CalendarEvent>` to
+      > `ShamsiDateRangePickerConfig` and mirrored the `DayCell` rendering logic there
+      > (holiday text color takes priority over the in-range accent tint; the event dot
+      > still swaps to `onAccentColor` when the cell is the selected `from`/`to` day).
 - [ ] Ship an **opt-in** official Iranian holiday dataset as a separate artifact
       (e.g. `shamsi-holidays`) so `shamsi-core` stays free of yearly data churn.
-- [ ] **Sample app:** add a demo that seeds a few holidays/events and opens the
+      > NOTE: Deferred — out of scope for this task. An accurate Iranian holiday
+      > calendar needs Hijri (lunar) calculations for religious holidays, which
+      > isn't implemented yet (see Phase 7 "Additional calendars"). Do this once
+      > Hijri support lands so the dataset isn't fixed-date-only from day one.
+- [x] **Sample app:** add a demo that seeds a few holidays/events and opens the
       calendar-style picker so the markers are visible. Tests for event matching
-      across month/year boundaries.
+      across month/year boundaries. — done 2026-07-08
 
 ---
 

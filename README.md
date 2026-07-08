@@ -29,6 +29,8 @@ This project is split into two modules:
 - **Leap Year Aware**: Automatically handles 29/30 day Esfand and Feb 29.
 - **Persian & Latin Formatting**: Built-in formatters for long/short date and time strings.
 - **Theming & Text Customization**: Restyle colors, typography (including custom fonts), and re-word the title/buttons/labels of every dialog via `ShamsiPickerColors`, `ShamsiPickerTypography`, and `ShamsiPickerStrings` — no forking required.
+- **Weekend Awareness**: The Calendar-style grid — in the date, date+time, and date range pickers — always highlights fixed weekly days off (Thursday/Friday for Shamsi, Saturday/Sunday for Gregorian) — no configuration needed.
+- **Holiday / Event Markers**: Mark days with a `CalendarEvent` (label, `CalendarEventType`, optional color) in the Calendar-style grid, via `events` on `ShamsiDatePickerConfig` or `ShamsiDateRangePickerConfig`. `Holiday` events render like a weekend (bold, colored day number); `Event` events show a small colored dot instead. Labels are exposed via `contentDescription` for screen readers.
 
 ## Screenshots
 
@@ -50,14 +52,14 @@ Add the following to your `build.gradle.kts`:
 ```kotlin
 dependencies {
     // Includes shamsi-core automatically
-    implementation("io.github.alirezajavan:shamsi-picker:1.4.0")
+    implementation("io.github.alirezajavan:shamsi-picker:1.5.0")
 }
 ```
 
 ### JVM / Non-UI
 ```kotlin
 dependencies {
-    implementation("io.github.alirezajavan:shamsi-core:1.4.0")
+    implementation("io.github.alirezajavan:shamsi-core:1.5.0")
 }
 ```
 
@@ -142,6 +144,7 @@ if (showDateRangePicker) {
         onDismiss = { showDateRangePicker = false },
         config = ShamsiDateRangePickerConfig(
             style = ShamsiDatePickerStyle.Calendar, // or .Wheel
+            // events = listOf(...) — same CalendarEvent markers as ShamsiDatePickerConfig
         ),
     )
 }
@@ -224,6 +227,7 @@ ShamsiDatePickerConfig(
     firstDayOfWeek: DayOfWeek? = null,   // null = use calendar system default
     compactCalendar: Boolean = false,    // shrink the Calendar-style grid
     compactWheel: Boolean = false,       // show only the selected row of the Wheel-style picker
+    events: List<CalendarEvent> = emptyList(), // holiday/event markers (Calendar style only)
 )
 ```
 
@@ -243,6 +247,23 @@ ShamsiDatePickerConfig(
 ShamsiDatePickerConfig(
     style = ShamsiDatePickerStyle.Calendar,
     compactCalendar = true,
+)
+
+// Calendar style with holiday/event markers
+ShamsiDatePickerConfig(
+    style = ShamsiDatePickerStyle.Calendar,
+    events = listOf(
+        // Holiday: bold, colored day number — same visual weight as a weekend
+        CalendarEvent(date = ShamsiDate(1403, 1, 1), label = "Nowruz", type = CalendarEventType.Holiday),
+        CalendarEvent(
+            date = ShamsiDate(1403, 1, 13),
+            label = "Sizdah Be-dar",
+            type = CalendarEventType.Holiday,
+            colorArgb = 0xFF43A047.toInt(),
+        ),
+        // Event: a small colored dot under the day number, not a day off
+        CalendarEvent(date = ShamsiDate(1403, 3, 14), label = "App Reminder", type = CalendarEventType.Event),
+    ),
 )
 
 // Compact Wheel — single row per field, no dimmed rows above/below

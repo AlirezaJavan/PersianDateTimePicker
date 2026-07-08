@@ -16,6 +16,7 @@ public data class ShamsiDatePickerStrings(
     val nextMonthDescription: String,
     val prevYearDescription: String,
     val nextYearDescription: String,
+    val weekendDescription: String = "Weekend",
 )
 
 /**
@@ -34,6 +35,7 @@ public data class ShamsiDateRangePickerStrings(
     val prevYearDescription: String,
     val nextYearDescription: String,
     val selectToHint: String,
+    val weekendDescription: String = "Weekend",
 )
 
 /**
@@ -79,4 +81,5 @@ public data class ShamsiDateTimePickerStrings(
     val nextYearDescription: String,
     val amLabel: String,
     val pmLabel: String,
+    val weekendDescription: String = "Weekend",
 )

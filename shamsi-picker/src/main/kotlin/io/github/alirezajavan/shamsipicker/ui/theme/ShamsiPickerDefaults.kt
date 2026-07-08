@@ -59,6 +59,8 @@ public object ShamsiPickerDefaults {
         rangeStripColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = ShamsiPickerDimens.RANGE_STRIP_ALPHA),
         confirmButtonColors: ButtonColors = ButtonDefaults.buttonColors(),
         cancelButtonColors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
+        eventMarkerColor: Color = MaterialTheme.colorScheme.tertiary,
+        holidayTextColor: Color = MaterialTheme.colorScheme.error,
     ): ShamsiPickerColors =
         ShamsiPickerColors(
             textColor = textColor,
@@ -74,6 +76,8 @@ public object ShamsiPickerDefaults {
             rangeStripColor = rangeStripColor,
             confirmButtonColors = confirmButtonColors,
             cancelButtonColors = cancelButtonColors,
+            eventMarkerColor = eventMarkerColor,
+            holidayTextColor = holidayTextColor,
         )
 
     @Composable
@@ -112,6 +116,7 @@ public object ShamsiPickerDefaults {
         nextMonthDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_month),
         prevYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_prev_year),
         nextYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_year),
+        weekendDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_weekend),
     ): ShamsiDatePickerStrings =
         ShamsiDatePickerStrings(
             title = title,
@@ -123,6 +128,7 @@ public object ShamsiPickerDefaults {
             nextMonthDescription = nextMonthDescription,
             prevYearDescription = prevYearDescription,
             nextYearDescription = nextYearDescription,
+            weekendDescription = weekendDescription,
         )
 
     @Composable
@@ -138,6 +144,7 @@ public object ShamsiPickerDefaults {
         prevYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_prev_year),
         nextYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_year),
         selectToHint: String = localizedString(calendarType, R.string.shamsi_date_range_picker_hint_select_to),
+        weekendDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_weekend),
     ): ShamsiDateRangePickerStrings =
         ShamsiDateRangePickerStrings(
             title = title,
@@ -150,6 +157,7 @@ public object ShamsiPickerDefaults {
             prevYearDescription = prevYearDescription,
             nextYearDescription = nextYearDescription,
             selectToHint = selectToHint,
+            weekendDescription = weekendDescription,
         )
 
     @Composable
@@ -200,6 +208,7 @@ public object ShamsiPickerDefaults {
         nextYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_year),
         amLabel: String = localizedString(calendarType, R.string.shamsi_time_am),
         pmLabel: String = localizedString(calendarType, R.string.shamsi_time_pm),
+        weekendDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_weekend),
     ): ShamsiDateTimePickerStrings =
         ShamsiDateTimePickerStrings(
             title = title,
@@ -213,5 +222,6 @@ public object ShamsiPickerDefaults {
             nextYearDescription = nextYearDescription,
             amLabel = amLabel,
             pmLabel = pmLabel,
+            weekendDescription = weekendDescription,
         )
 }

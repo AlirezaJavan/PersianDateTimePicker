@@ -57,6 +57,10 @@ internal object ShamsiPickerDimens {
     const val DAY_CELL_PADDING_DP: Int = 2
     const val DAY_CELL_SIZE_DP: Int = 38
     const val DISABLED_CONTENT_ALPHA: Float = 0.22f
+    const val EVENT_MARKER_SIZE_DP: Int = 5
+    const val EVENT_MARKER_BOTTOM_OFFSET_DP: Int = 3
+    const val COMPACT_EVENT_MARKER_SIZE_DP: Int = 4
+    const val COMPACT_EVENT_MARKER_BOTTOM_OFFSET_DP: Int = 1
 
     // Compact calendar-grid variant (used when the calendar shares space with another
     // control, e.g. the time wheel in ShamsiDateTimePickerDialog)

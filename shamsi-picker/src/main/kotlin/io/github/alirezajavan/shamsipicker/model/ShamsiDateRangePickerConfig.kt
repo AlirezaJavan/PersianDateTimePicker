@@ -17,6 +17,9 @@ import java.time.DayOfWeek
  *
  * [compactWheel] shows only the selected row of each Wheel-style row, with no
  * dimmed rows above/below.
+ *
+ * [events] marks days with a holiday/event indicator in the Calendar-style grid.
+ * Each event's date is matched by calendar day (year/month/day), ignoring time.
  */
 public data class ShamsiDateRangePickerConfig(
     val initialFrom: ShamsiDateLimit = ShamsiDate.Now,
@@ -28,4 +31,5 @@ public data class ShamsiDateRangePickerConfig(
     val firstDayOfWeek: DayOfWeek? = null,
     val compactCalendar: Boolean = false,
     val compactWheel: Boolean = false,
+    val events: List<CalendarEvent> = emptyList(),
 )

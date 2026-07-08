@@ -2,6 +2,7 @@ package io.github.alirezajavan.shamsipicker.calendar
 
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.ZoneId
 
 /**
@@ -14,6 +15,14 @@ public interface CalendarSystem {
 
     /** The default first day of the week for this calendar system. */
     public val defaultFirstDayOfWeek: DayOfWeek
+
+    /**
+     * The fixed days of the week that are always non-working days in this calendar
+     * system (e.g. Thursday/Friday for Shamsi, Saturday/Sunday for Gregorian).
+     * Unlike [io.github.alirezajavan.shamsipicker.model.CalendarEvent], these are
+     * intrinsic to the calendar and don't need to be supplied by the caller.
+     */
+    public val weekendDays: Set<DayOfWeek>
 
     /**
      * Short names of the days of the week, starting from [firstDayOfWeek].
@@ -83,4 +92,14 @@ public interface CalendarSystem {
         minDate: ShamsiDate?,
         maxDate: ShamsiDate?,
     ): IntRange
+
+    /** Whether the given date falls on one of [weekendDays]. */
+    public fun isWeekend(
+        year: Int,
+        month: Int,
+        day: Int,
+    ): Boolean {
+        val dayOfWeek = LocalDate.ofEpochDay(toEpochDay(year, month, day)).dayOfWeek
+        return dayOfWeek in weekendDays
+    }
 }

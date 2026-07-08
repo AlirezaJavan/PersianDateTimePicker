@@ -12,6 +12,7 @@ import java.time.ZoneId
 public object ShamsiCalendarSystem : CalendarSystem {
     override val yearRange: IntRange = ShamsiCalendar.YEAR_RANGE
     override val defaultFirstDayOfWeek: DayOfWeek = DayOfWeek.SATURDAY
+    override val weekendDays: Set<DayOfWeek> = setOf(DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
 
     override fun weekdayNames(firstDayOfWeek: DayOfWeek): List<String> {
         val names = ShamsiCalendar.WEEKDAY_NAMES

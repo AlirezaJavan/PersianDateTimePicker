@@ -22,4 +22,5 @@
     <string name="shamsi_time_range_picker_from">Start Time</string>
     <string name="shamsi_time_range_picker_to">End Time</string>
     <string name="shamsi_date_time_picker_title">Select Date &amp; Time</string>
+    <string name="shamsi_date_picker_weekend">Weekend</string>
 </resources>
