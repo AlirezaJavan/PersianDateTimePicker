@@ -1,13 +1,17 @@
 package io.github.alirezajavan.shamsipicker.ui.theme
 
+import android.content.res.Configuration
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import io.github.alirezajavan.shamsipicker.R
+import io.github.alirezajavan.shamsipicker.calendar.CalendarType
+import java.util.Locale
 
 /**
  * Default [ShamsiPickerColors], [ShamsiPickerTypography], and per-dialog
@@ -18,6 +22,26 @@ import io.github.alirezajavan.shamsipicker.R
  * Material3: call the factory and override only the parameters you need.
  */
 public object ShamsiPickerDefaults {
+    /**
+     * Resolves a built-in string resource for [calendarType]'s natural language
+     * (Persian for Shamsi, English for Gregorian) regardless of the device's
+     * system locale — mirrors how month names and digit formatting already
+     * follow `calendarType` instead of the device locale.
+     */
+    @Composable
+    private fun localizedString(
+        calendarType: CalendarType,
+        id: Int,
+    ): String {
+        val context = LocalContext.current
+        return remember(context, calendarType, id) {
+            val locale = if (calendarType == CalendarType.Gregorian) Locale.ENGLISH else Locale("fa")
+            val config = Configuration(context.resources.configuration)
+            config.setLocale(locale)
+            context.createConfigurationContext(config).resources.getString(id)
+        }
+    }
+
     @Composable
     public fun colors(
         textColor: Color = MaterialTheme.colorScheme.onSurface,
@@ -78,15 +102,16 @@ public object ShamsiPickerDefaults {
 
     @Composable
     public fun dateStrings(
-        title: String = stringResource(R.string.shamsi_date_picker_title),
-        confirmText: String = stringResource(R.string.shamsi_date_picker_confirm),
-        cancelText: String = stringResource(R.string.shamsi_date_picker_cancel),
-        styleWheelLabel: String = stringResource(R.string.shamsi_date_picker_style_wheel),
-        styleCalendarLabel: String = stringResource(R.string.shamsi_date_picker_style_calendar),
-        prevMonthDescription: String = stringResource(R.string.shamsi_date_picker_prev_month),
-        nextMonthDescription: String = stringResource(R.string.shamsi_date_picker_next_month),
-        prevYearDescription: String = stringResource(R.string.shamsi_date_picker_prev_year),
-        nextYearDescription: String = stringResource(R.string.shamsi_date_picker_next_year),
+        calendarType: CalendarType = CalendarType.Shamsi,
+        title: String = localizedString(calendarType, R.string.shamsi_date_picker_title),
+        confirmText: String = localizedString(calendarType, R.string.shamsi_date_picker_confirm),
+        cancelText: String = localizedString(calendarType, R.string.shamsi_date_picker_cancel),
+        styleWheelLabel: String = localizedString(calendarType, R.string.shamsi_date_picker_style_wheel),
+        styleCalendarLabel: String = localizedString(calendarType, R.string.shamsi_date_picker_style_calendar),
+        prevMonthDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_prev_month),
+        nextMonthDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_month),
+        prevYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_prev_year),
+        nextYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_year),
     ): ShamsiDatePickerStrings =
         ShamsiDatePickerStrings(
             title = title,
@@ -102,16 +127,17 @@ public object ShamsiPickerDefaults {
 
     @Composable
     public fun dateRangeStrings(
-        title: String = stringResource(R.string.shamsi_date_range_picker_title),
-        confirmText: String = stringResource(R.string.shamsi_date_picker_confirm),
-        cancelText: String = stringResource(R.string.shamsi_date_picker_cancel),
-        styleWheelLabel: String = stringResource(R.string.shamsi_date_picker_style_wheel),
-        styleCalendarLabel: String = stringResource(R.string.shamsi_date_picker_style_calendar),
-        prevMonthDescription: String = stringResource(R.string.shamsi_date_picker_prev_month),
-        nextMonthDescription: String = stringResource(R.string.shamsi_date_picker_next_month),
-        prevYearDescription: String = stringResource(R.string.shamsi_date_picker_prev_year),
-        nextYearDescription: String = stringResource(R.string.shamsi_date_picker_next_year),
-        selectToHint: String = stringResource(R.string.shamsi_date_range_picker_hint_select_to),
+        calendarType: CalendarType = CalendarType.Shamsi,
+        title: String = localizedString(calendarType, R.string.shamsi_date_range_picker_title),
+        confirmText: String = localizedString(calendarType, R.string.shamsi_date_picker_confirm),
+        cancelText: String = localizedString(calendarType, R.string.shamsi_date_picker_cancel),
+        styleWheelLabel: String = localizedString(calendarType, R.string.shamsi_date_picker_style_wheel),
+        styleCalendarLabel: String = localizedString(calendarType, R.string.shamsi_date_picker_style_calendar),
+        prevMonthDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_prev_month),
+        nextMonthDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_month),
+        prevYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_prev_year),
+        nextYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_year),
+        selectToHint: String = localizedString(calendarType, R.string.shamsi_date_range_picker_hint_select_to),
     ): ShamsiDateRangePickerStrings =
         ShamsiDateRangePickerStrings(
             title = title,
@@ -128,11 +154,12 @@ public object ShamsiPickerDefaults {
 
     @Composable
     public fun timeStrings(
-        title: String = stringResource(R.string.shamsi_time_picker_title),
-        confirmText: String = stringResource(R.string.shamsi_time_picker_confirm),
-        cancelText: String = stringResource(R.string.shamsi_time_picker_cancel),
-        amLabel: String = stringResource(R.string.shamsi_time_am),
-        pmLabel: String = stringResource(R.string.shamsi_time_pm),
+        calendarType: CalendarType = CalendarType.Shamsi,
+        title: String = localizedString(calendarType, R.string.shamsi_time_picker_title),
+        confirmText: String = localizedString(calendarType, R.string.shamsi_time_picker_confirm),
+        cancelText: String = localizedString(calendarType, R.string.shamsi_time_picker_cancel),
+        amLabel: String = localizedString(calendarType, R.string.shamsi_time_am),
+        pmLabel: String = localizedString(calendarType, R.string.shamsi_time_pm),
     ): ShamsiTimePickerStrings =
         ShamsiTimePickerStrings(
             title = title,
@@ -144,11 +171,12 @@ public object ShamsiPickerDefaults {
 
     @Composable
     public fun timeRangeStrings(
-        title: String = stringResource(R.string.shamsi_time_range_picker_title),
-        confirmText: String = stringResource(R.string.shamsi_time_picker_confirm),
-        cancelText: String = stringResource(R.string.shamsi_time_picker_cancel),
-        amLabel: String = stringResource(R.string.shamsi_time_am),
-        pmLabel: String = stringResource(R.string.shamsi_time_pm),
+        calendarType: CalendarType = CalendarType.Shamsi,
+        title: String = localizedString(calendarType, R.string.shamsi_time_range_picker_title),
+        confirmText: String = localizedString(calendarType, R.string.shamsi_time_picker_confirm),
+        cancelText: String = localizedString(calendarType, R.string.shamsi_time_picker_cancel),
+        amLabel: String = localizedString(calendarType, R.string.shamsi_time_am),
+        pmLabel: String = localizedString(calendarType, R.string.shamsi_time_pm),
     ): ShamsiTimeRangePickerStrings =
         ShamsiTimeRangePickerStrings(
             title = title,
@@ -160,17 +188,18 @@ public object ShamsiPickerDefaults {
 
     @Composable
     public fun dateTimeStrings(
-        title: String = stringResource(R.string.shamsi_date_time_picker_title),
-        confirmText: String = stringResource(R.string.shamsi_date_picker_confirm),
-        cancelText: String = stringResource(R.string.shamsi_date_picker_cancel),
-        styleWheelLabel: String = stringResource(R.string.shamsi_date_picker_style_wheel),
-        styleCalendarLabel: String = stringResource(R.string.shamsi_date_picker_style_calendar),
-        prevMonthDescription: String = stringResource(R.string.shamsi_date_picker_prev_month),
-        nextMonthDescription: String = stringResource(R.string.shamsi_date_picker_next_month),
-        prevYearDescription: String = stringResource(R.string.shamsi_date_picker_prev_year),
-        nextYearDescription: String = stringResource(R.string.shamsi_date_picker_next_year),
-        amLabel: String = stringResource(R.string.shamsi_time_am),
-        pmLabel: String = stringResource(R.string.shamsi_time_pm),
+        calendarType: CalendarType = CalendarType.Shamsi,
+        title: String = localizedString(calendarType, R.string.shamsi_date_time_picker_title),
+        confirmText: String = localizedString(calendarType, R.string.shamsi_date_picker_confirm),
+        cancelText: String = localizedString(calendarType, R.string.shamsi_date_picker_cancel),
+        styleWheelLabel: String = localizedString(calendarType, R.string.shamsi_date_picker_style_wheel),
+        styleCalendarLabel: String = localizedString(calendarType, R.string.shamsi_date_picker_style_calendar),
+        prevMonthDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_prev_month),
+        nextMonthDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_month),
+        prevYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_prev_year),
+        nextYearDescription: String = localizedString(calendarType, R.string.shamsi_date_picker_next_year),
+        amLabel: String = localizedString(calendarType, R.string.shamsi_time_am),
+        pmLabel: String = localizedString(calendarType, R.string.shamsi_time_pm),
     ): ShamsiDateTimePickerStrings =
         ShamsiDateTimePickerStrings(
             title = title,

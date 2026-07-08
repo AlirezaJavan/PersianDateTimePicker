@@ -62,7 +62,7 @@ public fun ShamsiDateRangePickerDialog(
     config: ShamsiDateRangePickerConfig = ShamsiDateRangePickerConfig(),
     colors: ShamsiPickerColors = ShamsiPickerDefaults.colors(),
     typography: ShamsiPickerTypography = ShamsiPickerDefaults.typography(),
-    strings: ShamsiDateRangePickerStrings = ShamsiPickerDefaults.dateRangeStrings(),
+    strings: ShamsiDateRangePickerStrings = ShamsiPickerDefaults.dateRangeStrings(calendarType = config.calendarType),
 ) {
     val calendarSystem = remember(config.calendarType) { config.calendarType.system }
     val (initFrom, initTo) =

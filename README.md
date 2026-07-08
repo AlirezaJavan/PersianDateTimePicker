@@ -350,9 +350,14 @@ ShamsiDatePickerDialog(
   (`ShamsiDatePickerStrings`, `ShamsiDateTimePickerStrings`,
   `ShamsiDateRangePickerStrings`, `ShamsiTimePickerStrings`,
   `ShamsiTimeRangePickerStrings`) covering the title, confirm/cancel button
-  text, and dialog-specific labels (like AM/PM). Independent of `calendarType`
-  and device locale — set English text on a Shamsi-calendar picker, or vice
-  versa.
+  text, and dialog-specific labels (like AM/PM). Pass one explicitly to set
+  English text on a Shamsi-calendar picker, or vice versa — a custom instance
+  always wins regardless of `calendarType` or device locale. The **default**
+  instance (built by `ShamsiPickerDefaults.dateStrings()` etc.) follows the
+  picker's `calendarType` instead of the device's system locale, so a Shamsi
+  picker shows Persian labels (e.g. `ق.ظ`/`ب.ظ` for AM/PM) even on an
+  English-language device, and a Gregorian picker shows English labels even on
+  a Persian-language device.
 
 See the sample app's "Theming" section for a live default-vs-custom comparison.
 

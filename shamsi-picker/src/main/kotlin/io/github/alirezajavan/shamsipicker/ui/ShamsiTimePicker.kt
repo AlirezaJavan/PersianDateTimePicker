@@ -46,7 +46,7 @@ public fun ShamsiTimePickerDialog(
     config: ShamsiTimePickerConfig = ShamsiTimePickerConfig(),
     colors: ShamsiPickerColors = ShamsiPickerDefaults.colors(),
     typography: ShamsiPickerTypography = ShamsiPickerDefaults.typography(),
-    strings: ShamsiTimePickerStrings = ShamsiPickerDefaults.timeStrings(),
+    strings: ShamsiTimePickerStrings = ShamsiPickerDefaults.timeStrings(calendarType = config.calendarType),
 ) {
     val initialTime = remember { config.initialTime.toShamsiTime() }
     val resolvedMin = remember(config.minTime) { config.minTime?.toShamsiTime() }

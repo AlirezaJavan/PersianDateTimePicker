@@ -62,7 +62,7 @@ public fun ShamsiDatePickerDialog(
     config: ShamsiDatePickerConfig = ShamsiDatePickerConfig(),
     colors: ShamsiPickerColors = ShamsiPickerDefaults.colors(),
     typography: ShamsiPickerTypography = ShamsiPickerDefaults.typography(),
-    strings: ShamsiDatePickerStrings = ShamsiPickerDefaults.dateStrings(),
+    strings: ShamsiDatePickerStrings = ShamsiPickerDefaults.dateStrings(calendarType = config.calendarType),
 ) {
     val calendarSystem = remember(config.calendarType) { config.calendarType.system }
     val initialDate =

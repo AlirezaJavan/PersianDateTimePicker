@@ -48,7 +48,7 @@ public fun ShamsiTimeRangePickerDialog(
     config: ShamsiTimeRangePickerConfig = ShamsiTimeRangePickerConfig(),
     colors: ShamsiPickerColors = ShamsiPickerDefaults.colors(),
     typography: ShamsiPickerTypography = ShamsiPickerDefaults.typography(),
-    strings: ShamsiTimeRangePickerStrings = ShamsiPickerDefaults.timeRangeStrings(),
+    strings: ShamsiTimeRangePickerStrings = ShamsiPickerDefaults.timeRangeStrings(calendarType = config.calendarType),
 ) {
     val initFrom = remember { config.initialFrom.toShamsiTime() }
     val initTo = remember { config.initialTo.toShamsiTime() }
