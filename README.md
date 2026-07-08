@@ -38,8 +38,8 @@ This project is split into two modules:
 |                            :---:                             |                           :---:                           |                           :---:                           |
 | <img src="screenshots/dateperiodcalendar.png" width="100%"/> | <img src="screenshots/dateperiodwheel.png" width="100%"/> | <img src="screenshots/timeperiodwheel.png" width="100%"/> |
 
-|                     Date + Time Picker (Wheel)                     |                     Date + Time Picker (Calendar)                     |
-|:--------------------------------------------------------------------:|:-----------------------------------------------------------------------:|
+|              Date + Time Picker (Wheel)               |              Date + Time Picker (Calendar)               |
+|:-------------------------------------------------------:|:------------------------------------------------------------:|
 | <img src="screenshots/datetimewheel.png" width="100%"/> | <img src="screenshots/datetimecalendar.png" width="100%"/> |
 
 ## Installation
@@ -120,7 +120,7 @@ if (showDateTimePicker) {
         onDismiss = { showDateTimePicker = false },
         config = ShamsiDateTimePickerConfig(
             initialDateTime = selectedDate,
-            style = ShamsiDatePickerStyle.Wheel, // Both wheels will be visible
+            style = ShamsiDatePickerStyle.Wheel, // or .Calendar — a compact grid shown above the time wheel
             calendarType = CalendarType.Shamsi,
         ),
     )
