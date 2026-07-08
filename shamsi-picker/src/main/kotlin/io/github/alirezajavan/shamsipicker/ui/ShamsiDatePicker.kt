@@ -173,7 +173,7 @@ public fun ShamsiDatePickerDialog(
 }
 
 @Composable
-private fun WheelDatePicker(
+internal fun WheelDatePicker(
     year: Int,
     month: Int,
     day: Int,
@@ -187,6 +187,8 @@ private fun WheelDatePicker(
     onYear: (Int) -> Unit,
     onMonth: (Int) -> Unit,
     onDay: (Int) -> Unit,
+    visibleCount: Int = ShamsiPickerDimens.WHEEL_DEFAULT_VISIBLE_COUNT,
+    dimAlpha: Float = ShamsiPickerDimens.WHEEL_DIM_ALPHA,
 ) {
     val months = calendarSystem.monthBounds(year, minDate, maxDate)
     val days = calendarSystem.dayBounds(year, month, maxDay, minDate, maxDate)
@@ -202,6 +204,8 @@ private fun WheelDatePicker(
                 label = { numberFormatter.format((it + 1).toLong()) },
                 onSelectedIndexChange = { onDay(it + 1) },
                 enabledRange = (days.first - 1)..<days.last,
+                visibleCount = visibleCount,
+                dimAlpha = dimAlpha,
                 textStyle = typography.wheelItemStyle,
                 selectedColor = colors.textColor,
                 unselectedColor = colors.secondaryTextColor,
@@ -216,6 +220,8 @@ private fun WheelDatePicker(
             label = { calendarSystem.monthNames(year)[it] },
             onSelectedIndexChange = { onMonth(it + 1) },
             enabledRange = (months.first - 1)..<months.last,
+            visibleCount = visibleCount,
+            dimAlpha = dimAlpha,
             textStyle = typography.wheelItemStyle,
             selectedColor = colors.textColor,
             unselectedColor = colors.secondaryTextColor,
@@ -230,6 +236,8 @@ private fun WheelDatePicker(
             onSelectedIndexChange = { onYear(calendarSystem.yearRange.first + it) },
             infinite = false,
             enabledRange = calendarSystem.yearEnabledRange(minDate, maxDate),
+            visibleCount = visibleCount,
+            dimAlpha = dimAlpha,
             textStyle = typography.wheelItemStyle,
             selectedColor = colors.textColor,
             unselectedColor = colors.secondaryTextColor,
@@ -241,7 +249,7 @@ private fun WheelDatePicker(
 }
 
 @Composable
-private fun CalendarDatePicker(
+internal fun CalendarDatePicker(
     year: Int,
     month: Int,
     day: Int,
@@ -258,6 +266,7 @@ private fun CalendarDatePicker(
     onYear: (Int) -> Unit,
     onMonth: (Int) -> Unit,
     onDay: (Int) -> Unit,
+    compact: Boolean = false,
 ) {
     val afterMin = { y: Int, m: Int ->
         minDate == null ||
@@ -269,11 +278,23 @@ private fun CalendarDatePicker(
     }
     val prevMonth = if (month == 1) (year - 1) to 12 else year to (month - 1)
     val nextMonth = if (month == 12) (year + 1) to 1 else year to (month + 1)
+    val columnSpacing =
+        if (compact) {
+            ShamsiPickerDimens.COMPACT_CALENDAR_COLUMN_SPACING_DP
+        } else {
+            ShamsiPickerDimens.CALENDAR_COLUMN_SPACING_DP
+        }
+    val gridRowSpacing =
+        if (compact) {
+            ShamsiPickerDimens.COMPACT_CALENDAR_GRID_ROW_SPACING_DP
+        } else {
+            ShamsiPickerDimens.CALENDAR_GRID_ROW_SPACING_DP
+        }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.CALENDAR_COLUMN_SPACING_DP.dp),
+        verticalArrangement = Arrangement.spacedBy(columnSpacing.dp),
     ) {
         NavRow(
             label = calendarSystem.monthNames(year)[month - 1],
@@ -283,6 +304,7 @@ private fun CalendarDatePicker(
             nextEnabled = beforeMax(nextMonth.first, nextMonth.second),
             colors = colors,
             typography = typography,
+            compact = compact,
             onPrev = {
                 onMonth(prevMonth.second)
                 if (prevMonth.first != year) onYear(prevMonth.first)
@@ -300,6 +322,7 @@ private fun CalendarDatePicker(
             nextEnabled = maxDate == null || year + 1 <= maxDate.year,
             colors = colors,
             typography = typography,
+            compact = compact,
             onPrev = { onYear(year - 1) },
             onNext = { onYear(year + 1) },
         )
@@ -320,7 +343,7 @@ private fun CalendarDatePicker(
         val cells = firstWeekday + maxDay
         val rows = (cells + 6) / 7
         Column(
-            verticalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.CALENDAR_GRID_ROW_SPACING_DP.dp),
+            verticalArrangement = Arrangement.spacedBy(gridRowSpacing.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
             for (row in 0 until rows) {
@@ -337,6 +360,7 @@ private fun CalendarDatePicker(
                                     numberFormatter = numberFormatter,
                                     colors = colors,
                                     typography = typography,
+                                    compact = compact,
                                     onClick = { onDay(dayNumber) },
                                 )
                             }
@@ -357,16 +381,19 @@ private fun DayCell(
     colors: ShamsiPickerColors,
     typography: ShamsiPickerTypography,
     onClick: () -> Unit,
+    compact: Boolean = false,
 ) {
     val background by animateColorAsState(
         if (selected) colors.accentColor else Color.Transparent,
         label = "dayBackground",
     )
+    val cellPadding = if (compact) ShamsiPickerDimens.COMPACT_DAY_CELL_PADDING_DP else ShamsiPickerDimens.DAY_CELL_PADDING_DP
+    val cellSize = if (compact) ShamsiPickerDimens.COMPACT_DAY_CELL_SIZE_DP else ShamsiPickerDimens.DAY_CELL_SIZE_DP
     Box(
         modifier =
             Modifier
-                .padding(ShamsiPickerDimens.DAY_CELL_PADDING_DP.dp)
-                .size(ShamsiPickerDimens.DAY_CELL_SIZE_DP.dp)
+                .padding(cellPadding.dp)
+                .size(cellSize.dp)
                 .clip(CircleShape)
                 .background(background)
                 .clickable(enabled = enabled, onClick = onClick),
@@ -397,13 +424,16 @@ internal fun NavRow(
     onNext: () -> Unit,
     prevEnabled: Boolean = true,
     nextEnabled: Boolean = true,
+    compact: Boolean = false,
 ) {
+    val buttonModifier =
+        if (compact) Modifier.size(ShamsiPickerDimens.COMPACT_NAV_BUTTON_SIZE_DP.dp) else Modifier
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        IconButton(onClick = onPrev, enabled = prevEnabled) {
+        IconButton(onClick = onPrev, enabled = prevEnabled, modifier = buttonModifier) {
             Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = contentDescriptionPrev)
         }
         Text(
@@ -412,7 +442,7 @@ internal fun NavRow(
             fontWeight = FontWeight.SemiBold,
             color = colors.textColor,
         )
-        IconButton(onClick = onNext, enabled = nextEnabled) {
+        IconButton(onClick = onNext, enabled = nextEnabled, modifier = buttonModifier) {
             Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = contentDescriptionNext)
         }
     }
@@ -452,7 +482,7 @@ internal fun StyleSwitcher(
 }
 
 @Composable
-private fun SegmentButton(
+internal fun SegmentButton(
     text: String,
     selected: Boolean,
     colors: ShamsiPickerColors,

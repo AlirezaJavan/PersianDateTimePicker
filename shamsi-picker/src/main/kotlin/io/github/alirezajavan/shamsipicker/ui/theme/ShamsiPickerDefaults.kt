@@ -157,4 +157,32 @@ public object ShamsiPickerDefaults {
             amLabel = amLabel,
             pmLabel = pmLabel,
         )
+
+    @Composable
+    public fun dateTimeStrings(
+        title: String = stringResource(R.string.shamsi_date_time_picker_title),
+        confirmText: String = stringResource(R.string.shamsi_date_picker_confirm),
+        cancelText: String = stringResource(R.string.shamsi_date_picker_cancel),
+        styleWheelLabel: String = stringResource(R.string.shamsi_date_picker_style_wheel),
+        styleCalendarLabel: String = stringResource(R.string.shamsi_date_picker_style_calendar),
+        prevMonthDescription: String = stringResource(R.string.shamsi_date_picker_prev_month),
+        nextMonthDescription: String = stringResource(R.string.shamsi_date_picker_next_month),
+        prevYearDescription: String = stringResource(R.string.shamsi_date_picker_prev_year),
+        nextYearDescription: String = stringResource(R.string.shamsi_date_picker_next_year),
+        amLabel: String = stringResource(R.string.shamsi_time_am),
+        pmLabel: String = stringResource(R.string.shamsi_time_pm),
+    ): ShamsiDateTimePickerStrings =
+        ShamsiDateTimePickerStrings(
+            title = title,
+            confirmText = confirmText,
+            cancelText = cancelText,
+            styleWheelLabel = styleWheelLabel,
+            styleCalendarLabel = styleCalendarLabel,
+            prevMonthDescription = prevMonthDescription,
+            nextMonthDescription = nextMonthDescription,
+            prevYearDescription = prevYearDescription,
+            nextYearDescription = nextYearDescription,
+            amLabel = amLabel,
+            pmLabel = pmLabel,
+        )
 }

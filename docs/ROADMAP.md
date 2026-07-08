@@ -110,16 +110,23 @@ A living, checkbox-driven backlog for `shamsi-core` and `shamsi-picker`.
 > Common real-world need (appointments/reminders) that today means chaining two
 > dialogs and merging results manually. Builds cleanly on Phase 1.
 
-- [ ] Confirm `ShamsiDate` (which already carries `hour`/`minute`) is the value
-      type, or add an explicit `ShamsiDateTime`. Record decision in a `> NOTE:`.
-- [ ] Add `ShamsiDateTimePickerConfig` (initial value, min/max, style,
-      `calendarType`).
-- [ ] Build `ShamsiDateTimePickerDialog` as a two-step / tabbed UI (date step →
-      time step) reusing existing date and time internals.
-- [ ] Add a combined formatter (`ShamsiDateFormatter.longWithTime`, `shortWithTime`).
-- [ ] **Sample app:** add a "Date + Time" demo entry that opens the combined
+- [x] Confirm `ShamsiDate` (which already carries `hour`/`minute`) is the value
+      type, or add an explicit `ShamsiDateTime`. Record decision in a `> NOTE:`. — done 2026-07-08
+      > NOTE: Confirmed `ShamsiDate` as the value type for the combined picker, as
+      > it already includes `hour` and `minute` fields and is used consistently
+      > across the library.
+- [x] Add `ShamsiDateTimePickerConfig` (initial value, min/max, style,
+      `calendarType`). — done 2026-07-08
+- [x] Build `ShamsiDateTimePickerDialog` as a unified UI with date and time
+      wheels visible simultaneously (3-item visible count for compactness). — done 2026-07-08
+      > NOTE: Originally planned as a tabbed/two-step UI, but pivoted to a
+      > stacked wheel layout based on user feedback for better "all-at-once"
+      > visibility and quicker selection. Reuses `WheelDatePicker` and
+      > `TimePicker` with a new `visibleCount` parameter.
+- [x] Add a combined formatter (`ShamsiDateFormatter.longWithTime`, `shortWithTime`). — done 2026-07-08
+- [x] **Sample app:** add a "Date + Time" demo entry that opens the combined
       dialog and displays the merged result. Tests: step navigation, min/max
-      spanning date+time.
+      spanning date+time. — done 2026-07-08
 
 ---
 

@@ -41,4 +41,17 @@ class ShamsiDateConversionTest {
 
         assertThat(roundTripped).isEqualTo(shamsiNewYear)
     }
+
+    @Test
+    fun `ShamsiDateLimit supports LocalDateTime`() {
+        val localDateTime = java.time.LocalDateTime.of(2024, 3, 20, 13, 45)
+        val limit = localDateTime.asLimit()
+        val shamsi = limit.toShamsiDate()
+
+        assertThat(shamsi.year).isEqualTo(1403)
+        assertThat(shamsi.month).isEqualTo(1)
+        assertThat(shamsi.day).isEqualTo(1)
+        assertThat(shamsi.hour).isEqualTo(13)
+        assertThat(shamsi.minute).isEqualTo(45)
+    }
 }

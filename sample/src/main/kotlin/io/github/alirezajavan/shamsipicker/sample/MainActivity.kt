@@ -41,12 +41,14 @@ import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRangePickerConfig
+import io.github.alirezajavan.shamsipicker.model.ShamsiDateTimePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiTime
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRangePickerConfig
 import io.github.alirezajavan.shamsipicker.ui.ShamsiDatePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiDateRangePickerDialog
+import io.github.alirezajavan.shamsipicker.ui.ShamsiDateTimePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiTimePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiTimeRangePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerColors
@@ -75,6 +77,7 @@ fun SampleScreen() {
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showDateTimePicker by remember { mutableStateOf(false) }
     // null = hidden; non-null = open with that style
     var showDateRangePickerStyle by remember { mutableStateOf<ShamsiDatePickerStyle?>(null) }
     var showTimeRangePicker by remember { mutableStateOf(false) }
@@ -127,12 +130,18 @@ fun SampleScreen() {
                 text = "Time: ${DateFormatter.time(selectedDate, calendarType)}",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Text(
+                text = "Combined: ${DateFormatter.longWithTime(selectedDate, calendarType)}",
+                style = MaterialTheme.typography.bodyLarge,
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = { showDatePicker = true }) { Text("Open Date Picker") }
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = { showTimePicker = true }) { Text("Open Time Picker") }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = { showDateTimePicker = true }) { Text("Open Date + Time Picker") }
 
             Spacer(modifier = Modifier.height(32.dp))
             HorizontalDivider()
@@ -250,6 +259,21 @@ fun SampleScreen() {
             config =
                 ShamsiTimePickerConfig(
                     initialTime = selectedDate.toTime(),
+                    calendarType = calendarType,
+                ),
+        )
+    }
+
+    if (showDateTimePicker) {
+        ShamsiDateTimePickerDialog(
+            onConfirm = {
+                selectedDate = it
+                showDateTimePicker = false
+            },
+            onDismiss = { showDateTimePicker = false },
+            config =
+                ShamsiDateTimePickerConfig(
+                    initialDateTime = selectedDate,
                     calendarType = calendarType,
                 ),
         )
