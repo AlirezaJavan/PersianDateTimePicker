@@ -139,6 +139,12 @@ public fun ShamsiDatePickerDialog(
                     onYear = { year = it },
                     onMonth = { month = it },
                     onDay = { day = it },
+                    visibleCount =
+                        if (config.compactWheel) {
+                            ShamsiPickerDimens.COMPACT_WHEEL_VISIBLE_COUNT
+                        } else {
+                            ShamsiPickerDimens.WHEEL_DEFAULT_VISIBLE_COUNT
+                        },
                 )
             }
 
@@ -157,6 +163,7 @@ public fun ShamsiDatePickerDialog(
                     colors = colors,
                     typography = typography,
                     strings = strings,
+                    compact = config.compactCalendar,
                     onYear = {
                         year =
                             it.coerceIn(

@@ -28,6 +28,9 @@ internal object ShamsiPickerDimens {
     const val RANGE_WHEEL_VISIBLE_COUNT: Int = 3
     const val RANGE_WHEEL_DIM_ALPHA: Float = 0.4f
 
+    // Single-row wheel variant (only the selected value visible, no rows above/below)
+    const val COMPACT_WHEEL_VISIBLE_COUNT: Int = 0
+
     // Dialog chrome
     const val DIALOG_OUTER_PADDING_DP: Int = 24
     const val DIALOG_WIDTH_DP: Int = 340

@@ -199,6 +199,8 @@ ShamsiDatePickerConfig(
     style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
     calendarType: CalendarType = CalendarType.Shamsi,
     firstDayOfWeek: DayOfWeek? = null,   // null = use calendar system default
+    compactCalendar: Boolean = false,    // shrink the Calendar-style grid
+    compactWheel: Boolean = false,       // show only the selected row of the Wheel-style picker
 )
 ```
 
@@ -212,6 +214,18 @@ ShamsiDatePickerConfig()
 ShamsiDatePickerConfig(
     initialDate = ShamsiDate(1403, 1, 1),
     style = ShamsiDatePickerStyle.Calendar,
+)
+
+// Compact Calendar grid, e.g. embedded next to other controls
+ShamsiDatePickerConfig(
+    style = ShamsiDatePickerStyle.Calendar,
+    compactCalendar = true,
+)
+
+// Compact Wheel — single row per field, no dimmed rows above/below
+ShamsiDatePickerConfig(
+    style = ShamsiDatePickerStyle.Wheel,
+    compactWheel = true,
 )
 
 // Gregorian initial date with a "today onwards" lower bound
@@ -262,6 +276,8 @@ ShamsiDateTimePickerConfig(
     style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
     calendarType: CalendarType = CalendarType.Shamsi,
     firstDayOfWeek: DayOfWeek? = null,
+    compactCalendar: Boolean = true,     // shrink the Calendar-style grid so it fits above the time wheel
+    compactWheel: Boolean = false,       // show only the selected row of each date/time wheel
 )
 ```
 

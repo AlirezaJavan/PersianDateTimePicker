@@ -56,6 +56,12 @@ public fun ShamsiDateTimePickerDialog(
         remember(config.firstDayOfWeek, calendarSystem) {
             config.firstDayOfWeek ?: calendarSystem.defaultFirstDayOfWeek
         }
+    val wheelVisibleCount =
+        if (config.compactWheel) {
+            ShamsiPickerDimens.COMPACT_WHEEL_VISIBLE_COUNT
+        } else {
+            ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT
+        }
 
     var currentStyle by remember { mutableStateOf(config.style) }
 
@@ -116,7 +122,7 @@ public fun ShamsiDateTimePickerDialog(
                         onYear = { year = it },
                         onMonth = { month = it },
                         onDay = { day = it },
-                        visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                        visibleCount = wheelVisibleCount,
                         dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
                     )
                 }
@@ -136,7 +142,7 @@ public fun ShamsiDateTimePickerDialog(
                         colors = colors,
                         typography = typography,
                         strings = strings.toDatePickerStrings(),
-                        compact = true,
+                        compact = config.compactCalendar,
                         onYear = {
                             year =
                                 it.coerceIn(
@@ -169,7 +175,7 @@ public fun ShamsiDateTimePickerDialog(
                 pmLabel = strings.pmLabel,
                 onHourChange = { hour = it },
                 onMinuteChange = { minute = it },
-                visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                visibleCount = wheelVisibleCount,
                 dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
             )
         }

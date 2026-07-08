@@ -83,6 +83,7 @@ fun SampleScreen() {
     var showTimeRangePicker by remember { mutableStateOf(false) }
     var useCustomTheme by remember { mutableStateOf(false) }
     var showThemedDatePicker by remember { mutableStateOf(false) }
+    var useCompactMode by remember { mutableStateOf(false) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -135,6 +136,13 @@ fun SampleScreen() {
                 style = MaterialTheme.typography.bodyLarge,
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Compact mode (smaller calendar grid / single-row wheels)")
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(checked = useCompactMode, onCheckedChange = { useCompactMode = it })
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = { showDatePicker = true }) { Text("Open Date Picker") }
@@ -245,6 +253,8 @@ fun SampleScreen() {
                     initialDate = selectedDate,
                     style = ShamsiDatePickerStyle.Calendar,
                     calendarType = calendarType,
+                    compactCalendar = useCompactMode,
+                    compactWheel = useCompactMode,
                 ),
         )
     }
@@ -275,6 +285,7 @@ fun SampleScreen() {
                 ShamsiDateTimePickerConfig(
                     initialDateTime = selectedDate,
                     calendarType = calendarType,
+                    compactWheel = useCompactMode,
                 ),
         )
     }
