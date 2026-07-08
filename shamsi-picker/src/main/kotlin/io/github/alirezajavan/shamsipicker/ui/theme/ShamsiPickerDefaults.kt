@@ -59,6 +59,7 @@ public object ShamsiPickerDefaults {
         rangeStripColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = ShamsiPickerDimens.RANGE_STRIP_ALPHA),
         confirmButtonColors: ButtonColors = ButtonDefaults.buttonColors(),
         cancelButtonColors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
+        eventMarkerColor: Color = MaterialTheme.colorScheme.tertiary,
     ): ShamsiPickerColors =
         ShamsiPickerColors(
             textColor = textColor,
@@ -74,6 +75,7 @@ public object ShamsiPickerDefaults {
             rangeStripColor = rangeStripColor,
             confirmButtonColors = confirmButtonColors,
             cancelButtonColors = cancelButtonColors,
+            eventMarkerColor = eventMarkerColor,
         )
 
     @Composable

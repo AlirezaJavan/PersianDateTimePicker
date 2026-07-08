@@ -29,6 +29,7 @@ This project is split into two modules:
 - **Leap Year Aware**: Automatically handles 29/30 day Esfand and Feb 29.
 - **Persian & Latin Formatting**: Built-in formatters for long/short date and time strings.
 - **Theming & Text Customization**: Restyle colors, typography (including custom fonts), and re-word the title/buttons/labels of every dialog via `ShamsiPickerColors`, `ShamsiPickerTypography`, and `ShamsiPickerStrings` — no forking required.
+- **Holiday / Event Markers**: Mark days with a `CalendarEvent` (label + optional color) in the Calendar-style grid — a dot appears under the day, and the label is exposed via `contentDescription` for screen readers.
 
 ## Screenshots
 
@@ -224,6 +225,7 @@ ShamsiDatePickerConfig(
     firstDayOfWeek: DayOfWeek? = null,   // null = use calendar system default
     compactCalendar: Boolean = false,    // shrink the Calendar-style grid
     compactWheel: Boolean = false,       // show only the selected row of the Wheel-style picker
+    events: List<CalendarEvent> = emptyList(), // holiday/event markers (Calendar style only)
 )
 ```
 
@@ -243,6 +245,15 @@ ShamsiDatePickerConfig(
 ShamsiDatePickerConfig(
     style = ShamsiDatePickerStyle.Calendar,
     compactCalendar = true,
+)
+
+// Calendar style with holiday/event markers
+ShamsiDatePickerConfig(
+    style = ShamsiDatePickerStyle.Calendar,
+    events = listOf(
+        CalendarEvent(date = ShamsiDate(1403, 1, 1), label = "Nowruz"),
+        CalendarEvent(date = ShamsiDate(1403, 1, 13), label = "Sizdah Be-dar", colorArgb = 0xFF43A047.toInt()),
+    ),
 )
 
 // Compact Wheel — single row per field, no dimmed rows above/below

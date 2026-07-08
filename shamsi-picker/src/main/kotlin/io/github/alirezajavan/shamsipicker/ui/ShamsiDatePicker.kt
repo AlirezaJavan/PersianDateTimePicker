@@ -32,11 +32,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.calendar.CalendarSystem
 import io.github.alirezajavan.shamsipicker.format.NumberFormatter
+import io.github.alirezajavan.shamsipicker.model.CalendarEvent
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
@@ -164,6 +168,7 @@ public fun ShamsiDatePickerDialog(
                     typography = typography,
                     strings = strings,
                     compact = config.compactCalendar,
+                    events = config.events,
                     onYear = {
                         year =
                             it.coerceIn(
@@ -274,6 +279,7 @@ internal fun CalendarDatePicker(
     onMonth: (Int) -> Unit,
     onDay: (Int) -> Unit,
     compact: Boolean = false,
+    events: List<CalendarEvent> = emptyList(),
 ) {
     val afterMin = { y: Int, m: Int ->
         minDate == null ||
@@ -349,6 +355,7 @@ internal fun CalendarDatePicker(
         val firstWeekday = calendarSystem.firstWeekdayOfMonth(year, month, firstDayOfWeek)
         val cells = firstWeekday + maxDay
         val rows = (cells + 6) / 7
+        val monthEvents = events.filter { it.date.year == year && it.date.month == month }
         Column(
             verticalArrangement = Arrangement.spacedBy(gridRowSpacing.dp),
             modifier = Modifier.fillMaxWidth(),
@@ -368,6 +375,7 @@ internal fun CalendarDatePicker(
                                     colors = colors,
                                     typography = typography,
                                     compact = compact,
+                                    events = monthEvents.filter { it.date.day == dayNumber },
                                     onClick = { onDay(dayNumber) },
                                 )
                             }
@@ -389,6 +397,7 @@ private fun DayCell(
     typography: ShamsiPickerTypography,
     onClick: () -> Unit,
     compact: Boolean = false,
+    events: List<CalendarEvent> = emptyList(),
 ) {
     val background by animateColorAsState(
         if (selected) colors.accentColor else Color.Transparent,
@@ -396,6 +405,10 @@ private fun DayCell(
     )
     val cellPadding = if (compact) ShamsiPickerDimens.COMPACT_DAY_CELL_PADDING_DP else ShamsiPickerDimens.DAY_CELL_PADDING_DP
     val cellSize = if (compact) ShamsiPickerDimens.COMPACT_DAY_CELL_SIZE_DP else ShamsiPickerDimens.DAY_CELL_SIZE_DP
+    val markerSize = if (compact) ShamsiPickerDimens.COMPACT_EVENT_MARKER_SIZE_DP else ShamsiPickerDimens.EVENT_MARKER_SIZE_DP
+    val markerBottomOffset =
+        if (compact) ShamsiPickerDimens.COMPACT_EVENT_MARKER_BOTTOM_OFFSET_DP else ShamsiPickerDimens.EVENT_MARKER_BOTTOM_OFFSET_DP
+    val eventDescription = events.joinToString(separator = ", ") { it.label }
     Box(
         modifier =
             Modifier
@@ -403,7 +416,14 @@ private fun DayCell(
                 .size(cellSize.dp)
                 .clip(CircleShape)
                 .background(background)
-                .clickable(enabled = enabled, onClick = onClick),
+                .clickable(enabled = enabled, onClick = onClick)
+                .then(
+                    if (eventDescription.isNotEmpty()) {
+                        Modifier.semantics { contentDescription = eventDescription }
+                    } else {
+                        Modifier
+                    },
+                ),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -417,6 +437,21 @@ private fun DayCell(
                     else -> colors.textColor
                 },
         )
+        val firstEvent = events.firstOrNull()
+        if (firstEvent != null) {
+            val markerColor =
+                firstEvent.colorArgb?.let { Color(it) }
+                    ?: colors.eventMarkerColor.takeOrElse { colors.accentColor }
+            Box(
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = markerBottomOffset.dp)
+                        .size(markerSize.dp)
+                        .clip(CircleShape)
+                        .background(if (selected) colors.onAccentColor else markerColor),
+            )
+        }
     }
 }
 

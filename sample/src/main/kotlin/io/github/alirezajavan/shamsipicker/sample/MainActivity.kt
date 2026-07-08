@@ -36,6 +36,7 @@ import io.github.alirezajavan.shamsipicker.calendar.GregorianCalendarSystem
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendarSystem
 import io.github.alirezajavan.shamsipicker.format.DateFormatter
+import io.github.alirezajavan.shamsipicker.model.CalendarEvent
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
@@ -84,6 +85,24 @@ fun SampleScreen() {
     var useCustomTheme by remember { mutableStateOf(false) }
     var showThemedDatePicker by remember { mutableStateOf(false) }
     var useCompactMode by remember { mutableStateOf(false) }
+    var showHolidaysPicker by remember { mutableStateOf(false) }
+
+    val holidayEvents =
+        remember(calendarType, selectedDate.year) {
+            if (calendarType == CalendarType.Shamsi) {
+                listOf(
+                    CalendarEvent(ShamsiDate(selectedDate.year, 1, 1), "Nowruz"),
+                    CalendarEvent(ShamsiDate(selectedDate.year, 1, 13), "Sizdah Be-dar", colorArgb = 0xFF43A047.toInt()),
+                    CalendarEvent(ShamsiDate(selectedDate.year, 3, 14), "App Reminder", colorArgb = 0xFF1E88E5.toInt()),
+                )
+            } else {
+                listOf(
+                    CalendarEvent(ShamsiDate(selectedDate.year, 1, 1), "New Year's Day"),
+                    CalendarEvent(ShamsiDate(selectedDate.year, 12, 25), "Christmas", colorArgb = 0xFF43A047.toInt()),
+                    CalendarEvent(ShamsiDate(selectedDate.year, 7, 4), "App Reminder", colorArgb = 0xFF1E88E5.toInt()),
+                )
+            }
+        }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -217,6 +236,22 @@ fun SampleScreen() {
             HorizontalDivider()
             Spacer(modifier = Modifier.height(32.dp))
 
+            // ── Holidays / Events ────────────────────────────────────────────
+            Text("Holidays / Events", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text =
+                    "Calendar-style picker with CalendarEvent markers — a dot under each " +
+                        "marked day, with the label read out via contentDescription for TalkBack.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(onClick = { showHolidaysPicker = true }) { Text("Open Date Picker with Events") }
+
+            Spacer(modifier = Modifier.height(32.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(32.dp))
+
             // ── Debug section ──────────────────────────────────────────────
             Text("Calendar Abstraction Debug", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(12.dp))
@@ -289,6 +324,25 @@ fun SampleScreen() {
                     calendarType = calendarType,
                     compactCalendar = useCompactMode,
                     compactWheel = useCompactMode,
+                ),
+        )
+    }
+
+    if (showHolidaysPicker) {
+        ShamsiDatePickerDialog(
+            onConfirm = {
+                selectedDate = it
+                showHolidaysPicker = false
+            },
+            onDismiss = { showHolidaysPicker = false },
+            config =
+                ShamsiDatePickerConfig(
+                    initialDate = selectedDate,
+                    style = ShamsiDatePickerStyle.Calendar,
+                    calendarType = calendarType,
+                    compactCalendar = useCompactMode,
+                    compactWheel = useCompactMode,
+                    events = holidayEvents,
                 ),
         )
     }
