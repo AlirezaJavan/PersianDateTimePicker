@@ -78,5 +78,6 @@ internal object ShamsiPickerDimens {
     const val RANGE_ROW_SPACING_DP: Int = 2
     const val RANGE_DIVIDER_PADDING_DP: Int = 8
     const val RANGE_DAY_ROW_HEIGHT_DP: Int = WHEEL_ITEM_HEIGHT_DP
+    const val COMPACT_RANGE_DAY_ROW_HEIGHT_DP: Int = 30
     const val RANGE_STRIP_ALPHA: Float = 0.15f
 }

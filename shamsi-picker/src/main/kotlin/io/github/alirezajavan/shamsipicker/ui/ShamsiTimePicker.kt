@@ -80,6 +80,12 @@ public fun ShamsiTimePickerDialog(
             pmLabel = strings.pmLabel,
             onHourChange = { hour = it },
             onMinuteChange = { minute = it },
+            visibleCount =
+                if (config.compactWheel) {
+                    ShamsiPickerDimens.COMPACT_WHEEL_VISIBLE_COUNT
+                } else {
+                    ShamsiPickerDimens.WHEEL_DEFAULT_VISIBLE_COUNT
+                },
         )
     }
 }

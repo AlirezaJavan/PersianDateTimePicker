@@ -117,6 +117,14 @@ fun SampleScreen() {
                 Text("Gregorian")
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Compact mode (applies to every picker below: smaller calendar grid, single-row wheels)")
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(checked = useCompactMode, onCheckedChange = { useCompactMode = it })
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
             // ── Single pickers ────────────────────────────────────────────────
@@ -136,13 +144,6 @@ fun SampleScreen() {
                 style = MaterialTheme.typography.bodyLarge,
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Compact mode (smaller calendar grid / single-row wheels)")
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(checked = useCompactMode, onCheckedChange = { useCompactMode = it })
-            }
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = { showDatePicker = true }) { Text("Open Date Picker") }
@@ -270,6 +271,7 @@ fun SampleScreen() {
                 ShamsiTimePickerConfig(
                     initialTime = selectedDate.toTime(),
                     calendarType = calendarType,
+                    compactWheel = useCompactMode,
                 ),
         )
     }
@@ -285,6 +287,7 @@ fun SampleScreen() {
                 ShamsiDateTimePickerConfig(
                     initialDateTime = selectedDate,
                     calendarType = calendarType,
+                    compactCalendar = useCompactMode,
                     compactWheel = useCompactMode,
                 ),
         )
@@ -305,6 +308,8 @@ fun SampleScreen() {
                     initialTo = selectedDateRange?.to ?: ShamsiCalendar.now(),
                     style = style,
                     calendarType = calendarType,
+                    compactCalendar = useCompactMode,
+                    compactWheel = useCompactMode,
                 ),
         )
     }
@@ -321,6 +326,7 @@ fun SampleScreen() {
                     initialFrom = selectedTimeRange?.from ?: ShamsiCalendar.now().toTime(),
                     initialTo = selectedTimeRange?.to ?: ShamsiCalendar.now().toTime(),
                     calendarType = calendarType,
+                    compactWheel = useCompactMode,
                 ),
         )
     }

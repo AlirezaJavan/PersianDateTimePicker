@@ -20,7 +20,7 @@ This project is split into two modules:
 - **Multi-Calendar Support**: Pick between **Shamsi** and **Gregorian** calendars using the same UI components.
 - **ShamsiDatePickerDialog**: Supports both Wheel (iOS-style) and Calendar (grid) styles.
 - **ShamsiTimePickerDialog**: iOS-style infinite spinning wheel for hours and minutes.
-- **ShamsiDateTimePickerDialog**: A unified dialog showing date and time wheels simultaneously for quick selection. Supports both Wheel and Calendar date styles — the Calendar grid uses a compact layout so it fits alongside the time wheel.
+- **ShamsiDateTimePickerDialog**: A unified dialog showing date and time wheels simultaneously for quick selection. Supports both Wheel and Calendar date styles, with an optional compact layout (`compactCalendar`/`compactWheel`) for tighter spacing.
 - **ShamsiDateRangePickerDialog**: Pick a from→to date range in Wheel or Calendar style.
 - **ShamsiTimeRangePickerDialog**: Pick a from→to time range with two stacked wheel rows.
 - **Limit Aware**: Set dynamic boundaries (e.g. `ShamsiDate.Now`) or fixed limits (Gregorian or Shamsi).
@@ -187,6 +187,29 @@ Every date or time field in a config object accepts a **limit type** — a seale
 
 Dynamic values (`Now`) are resolved **once when the dialog opens**, not on every recomposition.
 
+### Compact layouts
+
+Every config below (`ShamsiDatePickerConfig`, `ShamsiTimePickerConfig`,
+`ShamsiDateTimePickerConfig`, `ShamsiDateRangePickerConfig`,
+`ShamsiTimeRangePickerConfig`) accepts one or both of:
+
+- **`compactCalendar: Boolean`** (date configs only) — shrinks the Calendar-style
+  grid (smaller day cells, tighter spacing).
+- **`compactWheel: Boolean`** — collapses each Wheel-style row to just the
+  selected value, with no dimmed rows above/below.
+
+Both default to `false`, so nothing changes unless you opt in — independent of
+`calendarType` (Shamsi or Gregorian) and applied uniformly across simple and
+range pickers:
+
+```kotlin
+ShamsiDateTimePickerConfig(
+    style = ShamsiDatePickerStyle.Calendar,
+    compactCalendar = true,
+    compactWheel = true,
+)
+```
+
 ---
 
 ### `ShamsiDatePickerConfig`
@@ -245,6 +268,7 @@ ShamsiTimePickerConfig(
     minTime: ShamsiTimeLimit? = null,   // no lower bound if omitted
     maxTime: ShamsiTimeLimit? = null,   // no upper bound if omitted
     calendarType: CalendarType = CalendarType.Shamsi,
+    compactWheel: Boolean = false,      // show only the selected row of each wheel
 )
 ```
 
@@ -276,7 +300,7 @@ ShamsiDateTimePickerConfig(
     style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
     calendarType: CalendarType = CalendarType.Shamsi,
     firstDayOfWeek: DayOfWeek? = null,
-    compactCalendar: Boolean = true,     // shrink the Calendar-style grid so it fits above the time wheel
+    compactCalendar: Boolean = false,    // shrink the Calendar-style grid so it fits above the time wheel
     compactWheel: Boolean = false,       // show only the selected row of each date/time wheel
 )
 ```

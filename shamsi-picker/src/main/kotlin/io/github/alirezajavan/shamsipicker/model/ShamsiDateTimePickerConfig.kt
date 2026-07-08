@@ -13,8 +13,8 @@ import java.time.DayOfWeek
  * - `LocalDateTime.now().asLimit()` — the current Gregorian date/time converted to Shamsi
  *
  * [compactCalendar] shrinks the Calendar-style grid (smaller day cells, tighter
- * spacing) so it fits alongside the time wheel. Defaults to `true` since date and
- * time are always shown together in this dialog.
+ * spacing) so it fits more comfortably alongside the time wheel. Defaults to
+ * `false`; opt in if the full-size grid feels cramped in your layout.
  *
  * [compactWheel] shows only the selected row of the date/time wheels, with no
  * dimmed rows above/below, for even tighter layouts. Defaults to `false`,
@@ -27,6 +27,6 @@ public data class ShamsiDateTimePickerConfig(
     val style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
     val calendarType: CalendarType = CalendarType.Shamsi,
     val firstDayOfWeek: DayOfWeek? = null,
-    val compactCalendar: Boolean = true,
+    val compactCalendar: Boolean = false,
     val compactWheel: Boolean = false,
 )

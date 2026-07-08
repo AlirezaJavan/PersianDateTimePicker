@@ -10,6 +10,9 @@ import io.github.alirezajavan.shamsipicker.calendar.CalendarType
  * - `ShamsiTime.Now` / `ShamsiTimeLimit.Now` — current time, resolved at open time
  * - `LocalTime.of(9, 0).asLimit()` — a fixed Gregorian time
  * - `LocalTime.now().asLimit()` — current system time, resolved at open time
+ *
+ * [compactWheel] shows only the selected row of each wheel, with no dimmed rows
+ * above/below, for space-constrained layouts.
  */
 public data class ShamsiTimeRangePickerConfig(
     val initialFrom: ShamsiTimeLimit = ShamsiTime.Now,
@@ -17,4 +20,5 @@ public data class ShamsiTimeRangePickerConfig(
     val minTime: ShamsiTimeLimit? = null,
     val maxTime: ShamsiTimeLimit? = null,
     val calendarType: CalendarType = CalendarType.Shamsi,
+    val compactWheel: Boolean = false,
 )
