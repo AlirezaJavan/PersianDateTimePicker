@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.calendar.CalendarSystem
 import io.github.alirezajavan.shamsipicker.format.NumberFormatter
 import io.github.alirezajavan.shamsipicker.model.CalendarEvent
+import io.github.alirezajavan.shamsipicker.model.CalendarEventType
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
@@ -371,11 +372,13 @@ internal fun CalendarDatePicker(
                                     day = dayNumber,
                                     selected = dayNumber == day,
                                     enabled = dayNumber in dayBounds,
+                                    isWeekend = calendarSystem.isWeekend(year, month, dayNumber),
                                     numberFormatter = numberFormatter,
                                     colors = colors,
                                     typography = typography,
                                     compact = compact,
                                     events = monthEvents.filter { it.date.day == dayNumber },
+                                    weekendDescription = strings.weekendDescription,
                                     onClick = { onDay(dayNumber) },
                                 )
                             }
@@ -392,13 +395,19 @@ private fun DayCell(
     day: Int,
     selected: Boolean,
     enabled: Boolean,
+    isWeekend: Boolean,
     numberFormatter: NumberFormatter,
     colors: ShamsiPickerColors,
     typography: ShamsiPickerTypography,
     onClick: () -> Unit,
     compact: Boolean = false,
     events: List<CalendarEvent> = emptyList(),
+    weekendDescription: String = "",
 ) {
+    val holidayEvents = events.filter { it.type == CalendarEventType.Holiday }
+    val markerEvents = events.filter { it.type == CalendarEventType.Event }
+    val isHoliday = isWeekend || holidayEvents.isNotEmpty()
+
     val background by animateColorAsState(
         if (selected) colors.accentColor else Color.Transparent,
         label = "dayBackground",
@@ -408,7 +417,10 @@ private fun DayCell(
     val markerSize = if (compact) ShamsiPickerDimens.COMPACT_EVENT_MARKER_SIZE_DP else ShamsiPickerDimens.EVENT_MARKER_SIZE_DP
     val markerBottomOffset =
         if (compact) ShamsiPickerDimens.COMPACT_EVENT_MARKER_BOTTOM_OFFSET_DP else ShamsiPickerDimens.EVENT_MARKER_BOTTOM_OFFSET_DP
-    val eventDescription = events.joinToString(separator = ", ") { it.label }
+
+    val descriptionParts = events.map { it.label } + listOfNotNull(weekendDescription.takeIf { isWeekend && it.isNotEmpty() })
+    val cellDescription = descriptionParts.joinToString(separator = ", ")
+
     Box(
         modifier =
             Modifier
@@ -418,29 +430,33 @@ private fun DayCell(
                 .background(background)
                 .clickable(enabled = enabled, onClick = onClick)
                 .then(
-                    if (eventDescription.isNotEmpty()) {
-                        Modifier.semantics { contentDescription = eventDescription }
+                    if (cellDescription.isNotEmpty()) {
+                        Modifier.semantics { contentDescription = cellDescription }
                     } else {
                         Modifier
                     },
                 ),
         contentAlignment = Alignment.Center,
     ) {
+        val holidayColor =
+            holidayEvents.firstOrNull()?.colorArgb?.let { Color(it) }
+                ?: colors.holidayTextColor.takeOrElse { colors.textColor }
         Text(
             text = numberFormatter.format(day.toLong()),
             style = typography.dayCellStyle,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = if (selected || isHoliday) FontWeight.Bold else FontWeight.Normal,
             color =
                 when {
                     selected -> colors.onAccentColor
                     !enabled -> colors.disabledTextColor
+                    isHoliday -> holidayColor
                     else -> colors.textColor
                 },
         )
-        val firstEvent = events.firstOrNull()
-        if (firstEvent != null) {
+        val markerEvent = markerEvents.firstOrNull()
+        if (markerEvent != null) {
             val markerColor =
-                firstEvent.colorArgb?.let { Color(it) }
+                markerEvent.colorArgb?.let { Color(it) }
                     ?: colors.eventMarkerColor.takeOrElse { colors.accentColor }
             Box(
                 modifier =

@@ -14,6 +14,7 @@ import java.time.ZoneId
 public object GregorianCalendarSystem : CalendarSystem {
     override val yearRange: IntRange = 1900..2100
     override val defaultFirstDayOfWeek: DayOfWeek = DayOfWeek.SUNDAY
+    override val weekendDays: Set<DayOfWeek> = setOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
 
     private val ENGLISH_WEEKDAY_NAMES =
         listOf(

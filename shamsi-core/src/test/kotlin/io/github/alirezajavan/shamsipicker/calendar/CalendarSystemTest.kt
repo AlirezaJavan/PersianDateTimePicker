@@ -86,4 +86,21 @@ class CalendarSystemTest {
         // 2024-08-01 was Thursday. Gregorian Sun=0, Mon=1, Tue=2, Wed=3, Thu=4.
         assertThat(GregorianCalendarSystem.firstWeekdayOfMonth(2024, 8)).isEqualTo(4)
     }
+
+    @Test
+    fun `Shamsi weekend is Thursday and Friday`() {
+        // 1403-01-01 was Wednesday, so 1403-01-02 is Thursday and 1403-01-03 is Friday.
+        assertThat(ShamsiCalendarSystem.isWeekend(1403, 1, 1)).isFalse()
+        assertThat(ShamsiCalendarSystem.isWeekend(1403, 1, 2)).isTrue()
+        assertThat(ShamsiCalendarSystem.isWeekend(1403, 1, 3)).isTrue()
+        assertThat(ShamsiCalendarSystem.isWeekend(1403, 1, 4)).isFalse()
+    }
+
+    @Test
+    fun `Gregorian weekend is Saturday and Sunday`() {
+        // 2024-08-01 was Thursday, so 2024-08-03 is Saturday and 2024-08-04 is Sunday.
+        assertThat(GregorianCalendarSystem.isWeekend(2024, 8, 1)).isFalse()
+        assertThat(GregorianCalendarSystem.isWeekend(2024, 8, 3)).isTrue()
+        assertThat(GregorianCalendarSystem.isWeekend(2024, 8, 4)).isTrue()
+    }
 }

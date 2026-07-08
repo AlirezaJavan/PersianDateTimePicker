@@ -22,4 +22,5 @@
     <string name="shamsi_time_range_picker_from">زمان شروع</string>
     <string name="shamsi_time_range_picker_to">زمان پایان</string>
     <string name="shamsi_date_time_picker_title">انتخاب تاریخ و زمان</string>
+    <string name="shamsi_date_picker_weekend">تعطیل</string>
 </resources>

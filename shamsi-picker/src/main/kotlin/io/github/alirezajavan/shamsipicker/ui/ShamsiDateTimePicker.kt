@@ -193,4 +193,5 @@ private fun ShamsiDateTimePickerStrings.toDatePickerStrings() =
         nextMonthDescription = nextMonthDescription,
         prevYearDescription = prevYearDescription,
         nextYearDescription = nextYearDescription,
+        weekendDescription = weekendDescription,
     )

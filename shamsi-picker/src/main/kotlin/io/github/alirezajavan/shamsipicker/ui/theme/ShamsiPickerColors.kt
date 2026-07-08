@@ -24,4 +24,5 @@ public data class ShamsiPickerColors(
     val confirmButtonColors: ButtonColors,
     val cancelButtonColors: ButtonColors,
     val eventMarkerColor: Color = Color.Unspecified,
+    val holidayTextColor: Color = Color.Unspecified,
 )

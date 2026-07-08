@@ -29,13 +29,18 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alirezajavan.shamsipicker.calendar.CalendarSystem
 import io.github.alirezajavan.shamsipicker.format.NumberFormatter
+import io.github.alirezajavan.shamsipicker.model.CalendarEvent
+import io.github.alirezajavan.shamsipicker.model.CalendarEventType
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRange
@@ -212,6 +217,7 @@ public fun ShamsiDateRangePickerDialog(
                     typography = typography,
                     strings = strings,
                     compact = config.compactCalendar,
+                    events = config.events,
                     onDayTap = { day ->
                         val tapped = ShamsiDate(viewYear, viewMonth, day)
                         if (toDate != null) {
@@ -404,6 +410,7 @@ private fun CalendarDateRangePicker(
     onViewYear: (Int) -> Unit,
     onViewMonth: (Int) -> Unit,
     compact: Boolean = false,
+    events: List<CalendarEvent> = emptyList(),
 ) {
     val maxDay = calendarSystem.monthLength(viewYear, viewMonth)
     val days = calendarSystem.dayBounds(viewYear, viewMonth, maxDay, minDate, maxDate)
@@ -479,6 +486,7 @@ private fun CalendarDateRangePicker(
         val firstWeekday = calendarSystem.firstWeekdayOfMonth(viewYear, viewMonth, firstDayOfWeek)
         val cells = firstWeekday + maxDay
         val rows = (cells + 6) / 7
+        val monthEvents = events.filter { it.date.year == viewYear && it.date.month == viewMonth }
         // No row spacing: the strip (DayCellSize) in each RangeDayRowHeight cell provides
         // natural visual separation.
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -498,10 +506,13 @@ private fun CalendarDateRangePicker(
                                     isTo = isTo,
                                     isInRange = isInRange,
                                     enabled = dayNumber in days,
+                                    isWeekend = calendarSystem.isWeekend(viewYear, viewMonth, dayNumber),
                                     numberFormatter = numberFormatter,
                                     colors = colors,
                                     typography = typography,
                                     compact = compact,
+                                    events = monthEvents.filter { it.date.day == dayNumber },
+                                    weekendDescription = strings.weekendDescription,
                                     onClick = { onDayTap(dayNumber) },
                                 )
                             }
@@ -538,17 +549,30 @@ private fun RangeDayCell(
     isTo: Boolean,
     isInRange: Boolean,
     enabled: Boolean,
+    isWeekend: Boolean,
     numberFormatter: NumberFormatter,
     colors: ShamsiPickerColors,
     typography: ShamsiPickerTypography,
     onClick: () -> Unit,
     compact: Boolean = false,
+    events: List<CalendarEvent> = emptyList(),
+    weekendDescription: String = "",
 ) {
+    val holidayEvents = events.filter { it.type == CalendarEventType.Holiday }
+    val markerEvents = events.filter { it.type == CalendarEventType.Event }
+    val isHoliday = isWeekend || holidayEvents.isNotEmpty()
+
     val sameDay = isFrom && isTo
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val rowHeight =
         if (compact) ShamsiPickerDimens.COMPACT_RANGE_DAY_ROW_HEIGHT_DP else ShamsiPickerDimens.RANGE_DAY_ROW_HEIGHT_DP
     val cellSize = if (compact) ShamsiPickerDimens.COMPACT_DAY_CELL_SIZE_DP else ShamsiPickerDimens.DAY_CELL_SIZE_DP
+    val markerSize = if (compact) ShamsiPickerDimens.COMPACT_EVENT_MARKER_SIZE_DP else ShamsiPickerDimens.EVENT_MARKER_SIZE_DP
+    val markerBottomOffset =
+        if (compact) ShamsiPickerDimens.COMPACT_EVENT_MARKER_BOTTOM_OFFSET_DP else ShamsiPickerDimens.EVENT_MARKER_BOTTOM_OFFSET_DP
+
+    val descriptionParts = events.map { it.label } + listOfNotNull(weekendDescription.takeIf { isWeekend && it.isNotEmpty() })
+    val cellDescription = descriptionParts.joinToString(separator = ", ")
 
     val circleColor by animateColorAsState(
         if (isFrom || isTo) colors.accentColor else Color.Transparent,
@@ -595,7 +619,14 @@ private fun RangeDayCell(
                             }
                         }
                     }
-                }.clickable(enabled = enabled, onClick = onClick),
+                }.clickable(enabled = enabled, onClick = onClick)
+                .then(
+                    if (cellDescription.isNotEmpty()) {
+                        Modifier.semantics { contentDescription = cellDescription }
+                    } else {
+                        Modifier
+                    },
+                ),
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -606,18 +637,37 @@ private fun RangeDayCell(
                     .background(circleColor),
             contentAlignment = Alignment.Center,
         ) {
+            val holidayColor =
+                holidayEvents.firstOrNull()?.colorArgb?.let { Color(it) }
+                    ?: colors.holidayTextColor.takeOrElse { colors.textColor }
             Text(
                 text = numberFormatter.format(day.toLong()),
                 style = typography.dayCellStyle,
-                fontWeight = if (isFrom || isTo) FontWeight.Bold else FontWeight.Normal,
+                fontWeight = if (isFrom || isTo || isHoliday) FontWeight.Bold else FontWeight.Normal,
                 color =
                     when {
                         isFrom || isTo -> colors.onAccentColor
                         !enabled -> colors.disabledTextColor
+                        isHoliday -> holidayColor
                         isInRange -> colors.accentColor
                         else -> colors.textColor
                     },
             )
+            val markerEvent = markerEvents.firstOrNull()
+            if (markerEvent != null) {
+                val markerColor =
+                    markerEvent.colorArgb?.let { Color(it) }
+                        ?: colors.eventMarkerColor.takeOrElse { colors.accentColor }
+                Box(
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = markerBottomOffset.dp)
+                            .size(markerSize.dp)
+                            .clip(CircleShape)
+                            .background(if (isFrom || isTo) colors.onAccentColor else markerColor),
+                )
+            }
         }
     }
 }

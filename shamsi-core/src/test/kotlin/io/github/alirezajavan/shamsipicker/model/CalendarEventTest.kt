@@ -35,6 +35,15 @@ class CalendarEventTest {
     }
 
     @Test
+    fun `type defaults to Event and can be set to Holiday`() {
+        val default = CalendarEvent(date = ShamsiDate(1403, 1, 1), label = "App Reminder")
+        assertThat(default.type).isEqualTo(CalendarEventType.Event)
+
+        val holiday = default.copy(type = CalendarEventType.Holiday)
+        assertThat(holiday.type).isEqualTo(CalendarEventType.Holiday)
+    }
+
+    @Test
     fun `colorArgb defaults to null and can be set`() {
         val default = CalendarEvent(date = ShamsiDate(1403, 1, 1), label = "Nowruz")
         assertThat(default.colorArgb).isNull()

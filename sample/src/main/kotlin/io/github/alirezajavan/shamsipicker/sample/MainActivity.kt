@@ -37,6 +37,7 @@ import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendar
 import io.github.alirezajavan.shamsipicker.calendar.ShamsiCalendarSystem
 import io.github.alirezajavan.shamsipicker.format.DateFormatter
 import io.github.alirezajavan.shamsipicker.model.CalendarEvent
+import io.github.alirezajavan.shamsipicker.model.CalendarEventType
 import io.github.alirezajavan.shamsipicker.model.ShamsiDate
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
@@ -91,15 +92,35 @@ fun SampleScreen() {
         remember(calendarType, selectedDate.year) {
             if (calendarType == CalendarType.Shamsi) {
                 listOf(
-                    CalendarEvent(ShamsiDate(selectedDate.year, 1, 1), "Nowruz"),
-                    CalendarEvent(ShamsiDate(selectedDate.year, 1, 13), "Sizdah Be-dar", colorArgb = 0xFF43A047.toInt()),
-                    CalendarEvent(ShamsiDate(selectedDate.year, 3, 14), "App Reminder", colorArgb = 0xFF1E88E5.toInt()),
+                    CalendarEvent(ShamsiDate(selectedDate.year, 1, 1), "Nowruz", type = CalendarEventType.Holiday),
+                    CalendarEvent(
+                        ShamsiDate(selectedDate.year, 1, 13),
+                        "Sizdah Be-dar",
+                        type = CalendarEventType.Holiday,
+                        colorArgb = 0xFF43A047.toInt(),
+                    ),
+                    CalendarEvent(
+                        ShamsiDate(selectedDate.year, 3, 14),
+                        "App Reminder",
+                        type = CalendarEventType.Event,
+                        colorArgb = 0xFF1E88E5.toInt(),
+                    ),
                 )
             } else {
                 listOf(
-                    CalendarEvent(ShamsiDate(selectedDate.year, 1, 1), "New Year's Day"),
-                    CalendarEvent(ShamsiDate(selectedDate.year, 12, 25), "Christmas", colorArgb = 0xFF43A047.toInt()),
-                    CalendarEvent(ShamsiDate(selectedDate.year, 7, 4), "App Reminder", colorArgb = 0xFF1E88E5.toInt()),
+                    CalendarEvent(ShamsiDate(selectedDate.year, 1, 1), "New Year's Day", type = CalendarEventType.Holiday),
+                    CalendarEvent(
+                        ShamsiDate(selectedDate.year, 12, 25),
+                        "Christmas",
+                        type = CalendarEventType.Holiday,
+                        colorArgb = 0xFF43A047.toInt(),
+                    ),
+                    CalendarEvent(
+                        ShamsiDate(selectedDate.year, 7, 4),
+                        "App Reminder",
+                        type = CalendarEventType.Event,
+                        colorArgb = 0xFF1E88E5.toInt(),
+                    ),
                 )
             }
         }
@@ -178,6 +199,13 @@ fun SampleScreen() {
             // ── Range pickers ─────────────────────────────────────────────────
             Text("Range Pickers", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text =
+                    "The Calendar-style range picker below also marks weekends and the " +
+                        "same holiday/event set used in the Holidays/Events demo.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             val dateRangeText =
                 selectedDateRange?.let {
@@ -241,8 +269,9 @@ fun SampleScreen() {
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text =
-                    "Calendar-style picker with CalendarEvent markers — a dot under each " +
-                        "marked day, with the label read out via contentDescription for TalkBack.",
+                    "Calendar-style picker: weekends (Thu/Fri for Shamsi, Sat/Sun for Gregorian) " +
+                        "and Holiday-type events render as bold red day numbers; Event-type events " +
+                        "show a colored dot instead. Labels are read out via contentDescription for TalkBack.",
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -364,6 +393,7 @@ fun SampleScreen() {
                     calendarType = calendarType,
                     compactCalendar = useCompactMode,
                     compactWheel = useCompactMode,
+                    events = holidayEvents,
                 ),
         )
     }
