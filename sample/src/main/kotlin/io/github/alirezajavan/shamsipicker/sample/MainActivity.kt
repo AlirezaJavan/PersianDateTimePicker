@@ -41,12 +41,14 @@ import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiDatePickerStyle
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiDateRangePickerConfig
+import io.github.alirezajavan.shamsipicker.model.ShamsiDateTimePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiTime
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimePickerConfig
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRange
 import io.github.alirezajavan.shamsipicker.model.ShamsiTimeRangePickerConfig
 import io.github.alirezajavan.shamsipicker.ui.ShamsiDatePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiDateRangePickerDialog
+import io.github.alirezajavan.shamsipicker.ui.ShamsiDateTimePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiTimePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.ShamsiTimeRangePickerDialog
 import io.github.alirezajavan.shamsipicker.ui.theme.ShamsiPickerColors
@@ -75,11 +77,13 @@ fun SampleScreen() {
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showDateTimePicker by remember { mutableStateOf(false) }
     // null = hidden; non-null = open with that style
     var showDateRangePickerStyle by remember { mutableStateOf<ShamsiDatePickerStyle?>(null) }
     var showTimeRangePicker by remember { mutableStateOf(false) }
     var useCustomTheme by remember { mutableStateOf(false) }
     var showThemedDatePicker by remember { mutableStateOf(false) }
+    var useCompactMode by remember { mutableStateOf(false) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -113,6 +117,14 @@ fun SampleScreen() {
                 Text("Gregorian")
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Compact mode (applies to every picker below: smaller calendar grid, single-row wheels)")
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(checked = useCompactMode, onCheckedChange = { useCompactMode = it })
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
             // ── Single pickers ────────────────────────────────────────────────
@@ -127,12 +139,18 @@ fun SampleScreen() {
                 text = "Time: ${DateFormatter.time(selectedDate, calendarType)}",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Text(
+                text = "Combined: ${DateFormatter.longWithTime(selectedDate, calendarType)}",
+                style = MaterialTheme.typography.bodyLarge,
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = { showDatePicker = true }) { Text("Open Date Picker") }
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = { showTimePicker = true }) { Text("Open Time Picker") }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = { showDateTimePicker = true }) { Text("Open Date + Time Picker") }
 
             Spacer(modifier = Modifier.height(32.dp))
             HorizontalDivider()
@@ -236,6 +254,8 @@ fun SampleScreen() {
                     initialDate = selectedDate,
                     style = ShamsiDatePickerStyle.Calendar,
                     calendarType = calendarType,
+                    compactCalendar = useCompactMode,
+                    compactWheel = useCompactMode,
                 ),
         )
     }
@@ -251,6 +271,24 @@ fun SampleScreen() {
                 ShamsiTimePickerConfig(
                     initialTime = selectedDate.toTime(),
                     calendarType = calendarType,
+                    compactWheel = useCompactMode,
+                ),
+        )
+    }
+
+    if (showDateTimePicker) {
+        ShamsiDateTimePickerDialog(
+            onConfirm = {
+                selectedDate = it
+                showDateTimePicker = false
+            },
+            onDismiss = { showDateTimePicker = false },
+            config =
+                ShamsiDateTimePickerConfig(
+                    initialDateTime = selectedDate,
+                    calendarType = calendarType,
+                    compactCalendar = useCompactMode,
+                    compactWheel = useCompactMode,
                 ),
         )
     }
@@ -270,6 +308,8 @@ fun SampleScreen() {
                     initialTo = selectedDateRange?.to ?: ShamsiCalendar.now(),
                     style = style,
                     calendarType = calendarType,
+                    compactCalendar = useCompactMode,
+                    compactWheel = useCompactMode,
                 ),
         )
     }
@@ -286,6 +326,7 @@ fun SampleScreen() {
                     initialFrom = selectedTimeRange?.from ?: ShamsiCalendar.now().toTime(),
                     initialTo = selectedTimeRange?.to ?: ShamsiCalendar.now().toTime(),
                     calendarType = calendarType,
+                    compactWheel = useCompactMode,
                 ),
         )
     }

@@ -28,6 +28,9 @@ internal object ShamsiPickerDimens {
     const val RANGE_WHEEL_VISIBLE_COUNT: Int = 3
     const val RANGE_WHEEL_DIM_ALPHA: Float = 0.4f
 
+    // Single-row wheel variant (only the selected value visible, no rows above/below)
+    const val COMPACT_WHEEL_VISIBLE_COUNT: Int = 0
+
     // Dialog chrome
     const val DIALOG_OUTER_PADDING_DP: Int = 24
     const val DIALOG_WIDTH_DP: Int = 340
@@ -55,6 +58,14 @@ internal object ShamsiPickerDimens {
     const val DAY_CELL_SIZE_DP: Int = 38
     const val DISABLED_CONTENT_ALPHA: Float = 0.22f
 
+    // Compact calendar-grid variant (used when the calendar shares space with another
+    // control, e.g. the time wheel in ShamsiDateTimePickerDialog)
+    const val COMPACT_CALENDAR_COLUMN_SPACING_DP: Int = 4
+    const val COMPACT_CALENDAR_GRID_ROW_SPACING_DP: Int = 1
+    const val COMPACT_DAY_CELL_PADDING_DP: Int = 1
+    const val COMPACT_DAY_CELL_SIZE_DP: Int = 26
+    const val COMPACT_NAV_BUTTON_SIZE_DP: Int = 32
+
     // Style switcher
     const val SWITCHER_CORNER_RADIUS_DP: Int = 12
     const val SWITCHER_PADDING_DP: Int = 3
@@ -67,5 +78,6 @@ internal object ShamsiPickerDimens {
     const val RANGE_ROW_SPACING_DP: Int = 2
     const val RANGE_DIVIDER_PADDING_DP: Int = 8
     const val RANGE_DAY_ROW_HEIGHT_DP: Int = WHEEL_ITEM_HEIGHT_DP
+    const val COMPACT_RANGE_DAY_ROW_HEIGHT_DP: Int = 30
     const val RANGE_STRIP_ALPHA: Float = 0.15f
 }

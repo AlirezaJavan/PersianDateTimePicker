@@ -20,6 +20,7 @@ This project is split into two modules:
 - **Multi-Calendar Support**: Pick between **Shamsi** and **Gregorian** calendars using the same UI components.
 - **ShamsiDatePickerDialog**: Supports both Wheel (iOS-style) and Calendar (grid) styles.
 - **ShamsiTimePickerDialog**: iOS-style infinite spinning wheel for hours and minutes.
+- **ShamsiDateTimePickerDialog**: A unified dialog showing date and time wheels simultaneously for quick selection. Supports both Wheel and Calendar date styles, with an optional compact layout (`compactCalendar`/`compactWheel`) for tighter spacing.
 - **ShamsiDateRangePickerDialog**: Pick a from→to date range in Wheel or Calendar style.
 - **ShamsiTimeRangePickerDialog**: Pick a from→to time range with two stacked wheel rows.
 - **Limit Aware**: Set dynamic boundaries (e.g. `ShamsiDate.Now`) or fixed limits (Gregorian or Shamsi).
@@ -37,6 +38,10 @@ This project is split into two modules:
 |                            :---:                             |                           :---:                           |                           :---:                           |
 | <img src="screenshots/dateperiodcalendar.png" width="100%"/> | <img src="screenshots/dateperiodwheel.png" width="100%"/> | <img src="screenshots/timeperiodwheel.png" width="100%"/> |
 
+|              Date + Time Picker (Wheel)               |              Date + Time Picker (Calendar)               |
+|:-------------------------------------------------------:|:------------------------------------------------------------:|
+| <img src="screenshots/datetimewheel.png" width="100%"/> | <img src="screenshots/datetimecalendar.png" width="100%"/> |
+
 ## Installation
 
 Add the following to your `build.gradle.kts`:
@@ -45,14 +50,14 @@ Add the following to your `build.gradle.kts`:
 ```kotlin
 dependencies {
     // Includes shamsi-core automatically
-    implementation("io.github.alirezajavan:shamsi-picker:1.3.0")
+    implementation("io.github.alirezajavan:shamsi-picker:1.4.0")
 }
 ```
 
 ### JVM / Non-UI
 ```kotlin
 dependencies {
-    implementation("io.github.alirezajavan:shamsi-core:1.3.0")
+    implementation("io.github.alirezajavan:shamsi-core:1.4.0")
 }
 ```
 
@@ -96,6 +101,27 @@ if (showTimePicker) {
         onDismiss = { showTimePicker = false },
         config = ShamsiTimePickerConfig(
             initialTime = selectedDate.toTime(),
+        ),
+    )
+}
+```
+
+### Date + Time Picker
+
+```kotlin
+var showDateTimePicker by remember { mutableStateOf(false) }
+
+if (showDateTimePicker) {
+    ShamsiDateTimePickerDialog(
+        onConfirm = { dateTime ->
+            selectedDate = dateTime
+            showDateTimePicker = false
+        },
+        onDismiss = { showDateTimePicker = false },
+        config = ShamsiDateTimePickerConfig(
+            initialDateTime = selectedDate,
+            style = ShamsiDatePickerStyle.Wheel, // or .Calendar — a compact grid shown above the time wheel
+            calendarType = CalendarType.Shamsi,
         ),
     )
 }
@@ -155,9 +181,34 @@ Every date or time field in a config object accepts a **limit type** — a seale
 | Fixed Shamsi value | `ShamsiDate(1403, 6, 15)` | `ShamsiTime(8, 30)` |
 | Current date/time (dynamic) | `ShamsiDate.Now` or `ShamsiDateLimit.Now` | `ShamsiTime.Now` or `ShamsiTimeLimit.Now` |
 | Fixed Gregorian value | `LocalDate.of(2024, 9, 5).asLimit()` | `LocalTime.of(8, 30).asLimit()` |
+| Fixed Gregorian (DateTime) | `LocalDateTime.of(2024, 9, 5, 10, 30).asLimit()` | - |
 | Current Gregorian (dynamic) | `LocalDate.now().asLimit()` | `LocalTime.now().asLimit()` |
+| Current Gregorian (DateTime) | `LocalDateTime.now().asLimit()` | - |
 
 Dynamic values (`Now`) are resolved **once when the dialog opens**, not on every recomposition.
+
+### Compact layouts
+
+Every config below (`ShamsiDatePickerConfig`, `ShamsiTimePickerConfig`,
+`ShamsiDateTimePickerConfig`, `ShamsiDateRangePickerConfig`,
+`ShamsiTimeRangePickerConfig`) accepts one or both of:
+
+- **`compactCalendar: Boolean`** (date configs only) — shrinks the Calendar-style
+  grid (smaller day cells, tighter spacing).
+- **`compactWheel: Boolean`** — collapses each Wheel-style row to just the
+  selected value, with no dimmed rows above/below.
+
+Both default to `false`, so nothing changes unless you opt in — independent of
+`calendarType` (Shamsi or Gregorian) and applied uniformly across simple and
+range pickers:
+
+```kotlin
+ShamsiDateTimePickerConfig(
+    style = ShamsiDatePickerStyle.Calendar,
+    compactCalendar = true,
+    compactWheel = true,
+)
+```
 
 ---
 
@@ -171,6 +222,8 @@ ShamsiDatePickerConfig(
     style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
     calendarType: CalendarType = CalendarType.Shamsi,
     firstDayOfWeek: DayOfWeek? = null,   // null = use calendar system default
+    compactCalendar: Boolean = false,    // shrink the Calendar-style grid
+    compactWheel: Boolean = false,       // show only the selected row of the Wheel-style picker
 )
 ```
 
@@ -184,6 +237,18 @@ ShamsiDatePickerConfig()
 ShamsiDatePickerConfig(
     initialDate = ShamsiDate(1403, 1, 1),
     style = ShamsiDatePickerStyle.Calendar,
+)
+
+// Compact Calendar grid, e.g. embedded next to other controls
+ShamsiDatePickerConfig(
+    style = ShamsiDatePickerStyle.Calendar,
+    compactCalendar = true,
+)
+
+// Compact Wheel — single row per field, no dimmed rows above/below
+ShamsiDatePickerConfig(
+    style = ShamsiDatePickerStyle.Wheel,
+    compactWheel = true,
 )
 
 // Gregorian initial date with a "today onwards" lower bound
@@ -203,6 +268,7 @@ ShamsiTimePickerConfig(
     minTime: ShamsiTimeLimit? = null,   // no lower bound if omitted
     maxTime: ShamsiTimeLimit? = null,   // no upper bound if omitted
     calendarType: CalendarType = CalendarType.Shamsi,
+    compactWheel: Boolean = false,      // show only the selected row of each wheel
 )
 ```
 
@@ -224,10 +290,28 @@ ShamsiTimePickerConfig(
 
 ---
 
+### `ShamsiDateTimePickerConfig`
+
+```kotlin
+ShamsiDateTimePickerConfig(
+    initialDateTime: ShamsiDateLimit = ShamsiDate.Now,
+    minDateTime: ShamsiDateLimit? = null,
+    maxDateTime: ShamsiDateLimit? = null,
+    style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
+    calendarType: CalendarType = CalendarType.Shamsi,
+    firstDayOfWeek: DayOfWeek? = null,
+    compactCalendar: Boolean = false,    // shrink the Calendar-style grid so it fits above the time wheel
+    compactWheel: Boolean = false,       // show only the selected row of each date/time wheel
+)
+```
+
+---
+
 ## Theming
 
-Every dialog (`ShamsiDatePickerDialog`, `ShamsiDateRangePickerDialog`,
-`ShamsiTimePickerDialog`, `ShamsiTimeRangePickerDialog`) accepts three optional
+Every dialog (`ShamsiDatePickerDialog`, `ShamsiDateTimePickerDialog`,
+`ShamsiDateRangePickerDialog`, `ShamsiTimePickerDialog`,
+`ShamsiTimeRangePickerDialog`) accepts three optional
 parameters — `colors`, `typography`, and `strings` — alongside `config`. Each
 defaults to the current `MaterialTheme` / localized resources, so existing call
 sites keep working unchanged.
@@ -263,11 +347,17 @@ ShamsiDatePickerDialog(
   cell, weekday label, nav header, etc.). Set a custom font by putting a
   `FontFamily` on the style you pass in — there's no separate "font" parameter.
 - **`ShamsiPickerStrings`** — one data class per dialog
-  (`ShamsiDatePickerStrings`, `ShamsiDateRangePickerStrings`,
-  `ShamsiTimePickerStrings`, `ShamsiTimeRangePickerStrings`) covering the title,
-  confirm/cancel button text, and dialog-specific labels. Independent of
-  `calendarType` and device locale — set English text on a Shamsi-calendar
-  picker, or vice versa.
+  (`ShamsiDatePickerStrings`, `ShamsiDateTimePickerStrings`,
+  `ShamsiDateRangePickerStrings`, `ShamsiTimePickerStrings`,
+  `ShamsiTimeRangePickerStrings`) covering the title, confirm/cancel button
+  text, and dialog-specific labels (like AM/PM). Pass one explicitly to set
+  English text on a Shamsi-calendar picker, or vice versa — a custom instance
+  always wins regardless of `calendarType` or device locale. The **default**
+  instance (built by `ShamsiPickerDefaults.dateStrings()` etc.) follows the
+  picker's `calendarType` instead of the device's system locale, so a Shamsi
+  picker shows Persian labels (e.g. `ق.ظ`/`ب.ظ` for AM/PM) even on an
+  English-language device, and a Gregorian picker shows English labels even on
+  a Persian-language device.
 
 See the sample app's "Theming" section for a live default-vs-custom comparison.
 
@@ -282,9 +372,12 @@ import io.github.alirezajavan.shamsipicker.format.DateFormatter
 import io.github.alirezajavan.shamsipicker.calendar.CalendarType
 
 // Shamsi
-val shamsiLong = DateFormatter.long(date, CalendarType.Shamsi)   // چهارشنبه ۱ فروردین ۱۴۰۳
+val shamsiLong = DateFormatter.long(date, CalendarType.Shamsi)           // چهارشنبه ۱ فروردین ۱۴۰۳
+val shamsiLongTime = DateFormatter.longWithTime(date, CalendarType.Shamsi) // چهارشنبه ۱ فروردین ۱۴۰۳ ساعت ۱۳:۴۵
+
 // Gregorian
-val gregLong = DateFormatter.long(date, CalendarType.Gregorian) // Wed, March 20, 2024
+val gregLong = DateFormatter.long(date, CalendarType.Gregorian)         // Wed, March 20, 2024
+val gregLongTime = DateFormatter.longWithTime(date, CalendarType.Gregorian) // Wed, March 20, 2024 at 13:45
 ```
 
 ### Date Conversion

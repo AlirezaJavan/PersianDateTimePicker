@@ -61,6 +61,34 @@ public object DateFormatter {
         val year = numberFormatter.format(monthKey.year.toLong())
         return if (type == CalendarType.Shamsi) "$month $year" else "$month $year"
     }
+
+    /** e.g. «چهارشنبه ۱ فروردین ۱۴۰۳ ساعت ۱۳:۴۵» or «Wednesday, March 20, 2024 at 13:45». */
+    public fun longWithTime(
+        date: ShamsiDate,
+        type: CalendarType = CalendarType.Shamsi,
+    ): String {
+        val datePart = long(date, type)
+        val timePart = time(date, type)
+        return if (type == CalendarType.Shamsi) {
+            "$datePart ساعت $timePart"
+        } else {
+            "$datePart at $timePart"
+        }
+    }
+
+    /** e.g. «۱۴۰۳/۰۱/۰۱، ۱۳:۴۵» or «2024/03/20, 13:45». */
+    public fun shortWithTime(
+        date: ShamsiDate,
+        type: CalendarType = CalendarType.Shamsi,
+    ): String {
+        val datePart = short(date, type)
+        val timePart = time(date, type)
+        return if (type == CalendarType.Shamsi) {
+            "$datePart، $timePart"
+        } else {
+            "$datePart, $timePart"
+        }
+    }
 }
 
 /** Persian display formatting for Shamsi dates. Pure functions, unit-testable. */
@@ -77,4 +105,10 @@ public object ShamsiDateFormatter {
 
     /** e.g. «فروردین ۱۴۰۳». */
     public fun monthTitle(monthKey: MonthKey): String = DateFormatter.monthTitle(monthKey, CalendarType.Shamsi)
+
+    /** e.g. «چهارشنبه ۱ فروردین ۱۴۰۳ ساعت ۱۳:۴۵». */
+    public fun longWithTime(date: ShamsiDate): String = DateFormatter.longWithTime(date, CalendarType.Shamsi)
+
+    /** e.g. «۱۴۰۳/۰۱/۰۱، ۱۳:۴۵». */
+    public fun shortWithTime(date: ShamsiDate): String = DateFormatter.shortWithTime(date, CalendarType.Shamsi)
 }

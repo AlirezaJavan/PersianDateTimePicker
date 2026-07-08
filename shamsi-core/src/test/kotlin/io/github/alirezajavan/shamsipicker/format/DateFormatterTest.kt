@@ -30,4 +30,25 @@ class DateFormatterTest {
 
         assertThat(text).isEqualTo("۱۴۰۳/۰۱/۰۱")
     }
+
+    @Test
+    fun `longWithTime formats Shamsi date with time`() {
+        val date = ShamsiDate(1403, 1, 1, 13, 45)
+        val text = DateFormatter.longWithTime(date, CalendarType.Shamsi)
+        assertThat(text).isEqualTo("چهارشنبه ۱ فروردین ۱۴۰۳ ساعت ۱۳:۴۵")
+    }
+
+    @Test
+    fun `longWithTime formats Gregorian date with time`() {
+        val date = ShamsiDate(1403, 1, 1, 13, 45)
+        val text = DateFormatter.longWithTime(date, CalendarType.Gregorian)
+        assertThat(text).isEqualTo("Wed, March 20, 2024 at 13:45")
+    }
+
+    @Test
+    fun `shortWithTime formats Shamsi date with time`() {
+        val date = ShamsiDate(1403, 1, 1, 13, 45)
+        val text = DateFormatter.shortWithTime(date, CalendarType.Shamsi)
+        assertThat(text).isEqualTo("۱۴۰۳/۰۱/۰۱، ۱۳:۴۵")
+    }
 }

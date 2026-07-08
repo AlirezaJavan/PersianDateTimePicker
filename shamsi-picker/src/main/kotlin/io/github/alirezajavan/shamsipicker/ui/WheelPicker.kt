@@ -288,7 +288,7 @@ private fun Modifier.wheelTransform(
         val viewportCenter = (info.viewportStartOffset + info.viewportEndOffset) / 2f
         val itemCenter = item.offset + item.size / 2f
         val rows = ((itemCenter - viewportCenter) / item.size).coerceIn(-half.toFloat(), half.toFloat())
-        val t = (abs(rows) / half).coerceIn(0f, 1f)
+        val t = if (half == 0) 0f else (abs(rows) / half).coerceIn(0f, 1f)
 
         alpha = lerp(1f, dimAlpha, t)
         val scale = lerp(1f, ShamsiPickerDimens.WHEEL_MIN_SCALE, t)

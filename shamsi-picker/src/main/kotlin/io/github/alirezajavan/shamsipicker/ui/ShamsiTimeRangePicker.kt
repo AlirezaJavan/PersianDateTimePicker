@@ -48,7 +48,7 @@ public fun ShamsiTimeRangePickerDialog(
     config: ShamsiTimeRangePickerConfig = ShamsiTimeRangePickerConfig(),
     colors: ShamsiPickerColors = ShamsiPickerDefaults.colors(),
     typography: ShamsiPickerTypography = ShamsiPickerDefaults.typography(),
-    strings: ShamsiTimeRangePickerStrings = ShamsiPickerDefaults.timeRangeStrings(),
+    strings: ShamsiTimeRangePickerStrings = ShamsiPickerDefaults.timeRangeStrings(calendarType = config.calendarType),
 ) {
     val initFrom = remember { config.initialFrom.toShamsiTime() }
     val initTo = remember { config.initialTo.toShamsiTime() }
@@ -111,6 +111,7 @@ public fun ShamsiTimeRangePickerDialog(
                     strings = strings,
                     onHourChange = { fromHour = it },
                     onMinuteChange = { fromMinute = it },
+                    compact = config.compactWheel,
                 )
             }
             HorizontalDivider(modifier = Modifier.padding(vertical = ShamsiPickerDimens.RANGE_DIVIDER_PADDING_DP.dp))
@@ -127,6 +128,7 @@ public fun ShamsiTimeRangePickerDialog(
                     strings = strings,
                     onHourChange = { toHour = it },
                     onMinuteChange = { toMinute = it },
+                    compact = config.compactWheel,
                 )
             }
         }
@@ -146,7 +148,10 @@ private fun TimeWheelRow(
     strings: ShamsiTimeRangePickerStrings,
     onHourChange: (Int) -> Unit,
     onMinuteChange: (Int) -> Unit,
+    compact: Boolean = false,
 ) {
+    val wheelVisibleCount =
+        if (compact) ShamsiPickerDimens.COMPACT_WHEEL_VISIBLE_COUNT else ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT
     val lo = (minTime?.totalMinutes ?: 0).coerceIn(0, RANGE_MINUTES_PER_DAY - 1)
     val hi = (maxTime?.totalMinutes ?: (RANGE_MINUTES_PER_DAY - 1)).coerceIn(lo, RANGE_MINUTES_PER_DAY - 1)
     val hMin = lo / 60
@@ -186,7 +191,7 @@ private fun TimeWheelRow(
                     onHourChange(idx)
                 },
                 enabledRange = hMin..hMax,
-                visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                visibleCount = wheelVisibleCount,
                 dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
                 textStyle = typography.wheelItemStyle,
                 selectedColor = colors.textColor,
@@ -211,7 +216,7 @@ private fun TimeWheelRow(
                     onHourChange(amPm * 12 + idx)
                 },
                 enabledRange = hourEnabled,
-                visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                visibleCount = wheelVisibleCount,
                 dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
                 textStyle = typography.wheelItemStyle,
                 selectedColor = colors.textColor,
@@ -238,7 +243,7 @@ private fun TimeWheelRow(
                 onMinuteChange(min)
             },
             enabledRange = minuteRange,
-            visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+            visibleCount = wheelVisibleCount,
             dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
             textStyle = typography.wheelItemStyle,
             selectedColor = colors.textColor,
@@ -266,7 +271,7 @@ private fun TimeWheelRow(
                     },
                     infinite = false,
                     enabledRange = amPmEnabled,
-                    visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                    visibleCount = wheelVisibleCount,
                     dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
                     textStyle = typography.compactWheelItemStyle,
                     selectedColor = colors.textColor,

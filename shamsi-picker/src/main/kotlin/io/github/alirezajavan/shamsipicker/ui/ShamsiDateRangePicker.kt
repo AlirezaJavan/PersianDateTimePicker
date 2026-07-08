@@ -62,7 +62,7 @@ public fun ShamsiDateRangePickerDialog(
     config: ShamsiDateRangePickerConfig = ShamsiDateRangePickerConfig(),
     colors: ShamsiPickerColors = ShamsiPickerDefaults.colors(),
     typography: ShamsiPickerTypography = ShamsiPickerDefaults.typography(),
-    strings: ShamsiDateRangePickerStrings = ShamsiPickerDefaults.dateRangeStrings(),
+    strings: ShamsiDateRangePickerStrings = ShamsiPickerDefaults.dateRangeStrings(calendarType = config.calendarType),
 ) {
     val calendarSystem = remember(config.calendarType) { config.calendarType.system }
     val (initFrom, initTo) =
@@ -193,6 +193,7 @@ public fun ShamsiDateRangePickerDialog(
                     onToYear = { toYear = it },
                     onToMonth = { toMonth = it },
                     onToDay = { toDay = it },
+                    compact = config.compactWheel,
                 )
             }
 
@@ -210,6 +211,7 @@ public fun ShamsiDateRangePickerDialog(
                     colors = colors,
                     typography = typography,
                     strings = strings,
+                    compact = config.compactCalendar,
                     onDayTap = { day ->
                         val tapped = ShamsiDate(viewYear, viewMonth, day)
                         if (toDate != null) {
@@ -263,6 +265,7 @@ private fun WheelDateRangePicker(
     onToYear: (Int) -> Unit,
     onToMonth: (Int) -> Unit,
     onToDay: (Int) -> Unit,
+    compact: Boolean = false,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -283,6 +286,7 @@ private fun WheelDateRangePicker(
             onYear = onFromYear,
             onMonth = onFromMonth,
             onDay = onFromDay,
+            compact = compact,
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = ShamsiPickerDimens.RANGE_DIVIDER_PADDING_DP.dp))
         CompactWheelDateRow(
@@ -300,6 +304,7 @@ private fun WheelDateRangePicker(
             onYear = onToYear,
             onMonth = onToMonth,
             onDay = onToDay,
+            compact = compact,
         )
     }
 }
@@ -320,8 +325,11 @@ private fun CompactWheelDateRow(
     onYear: (Int) -> Unit,
     onMonth: (Int) -> Unit,
     onDay: (Int) -> Unit,
+    compact: Boolean = false,
 ) {
     val months = calendarSystem.monthBounds(year, minDate, maxDate)
+    val wheelVisibleCount =
+        if (compact) ShamsiPickerDimens.COMPACT_WHEEL_VISIBLE_COUNT else ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.DATE_WHEEL_ROW_SPACING_DP.dp, Alignment.CenterHorizontally),
@@ -334,7 +342,7 @@ private fun CompactWheelDateRow(
                 label = { numberFormatter.format((it + 1).toLong()) },
                 onSelectedIndexChange = { onDay(it + 1) },
                 enabledRange = (dayBounds.first - 1)..<dayBounds.last,
-                visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+                visibleCount = wheelVisibleCount,
                 dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
                 textStyle = typography.wheelItemStyle,
                 selectedColor = colors.textColor,
@@ -350,7 +358,7 @@ private fun CompactWheelDateRow(
             label = { calendarSystem.monthNames(year)[it] },
             onSelectedIndexChange = { onMonth(it + 1) },
             enabledRange = (months.first - 1)..<months.last,
-            visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+            visibleCount = wheelVisibleCount,
             dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
             textStyle = typography.wheelItemStyle,
             selectedColor = colors.textColor,
@@ -366,7 +374,7 @@ private fun CompactWheelDateRow(
             onSelectedIndexChange = { onYear(calendarSystem.yearRange.first + it) },
             infinite = false,
             enabledRange = calendarSystem.yearEnabledRange(minDate, maxDate),
-            visibleCount = ShamsiPickerDimens.RANGE_WHEEL_VISIBLE_COUNT,
+            visibleCount = wheelVisibleCount,
             dimAlpha = ShamsiPickerDimens.RANGE_WHEEL_DIM_ALPHA,
             textStyle = typography.wheelItemStyle,
             selectedColor = colors.textColor,
@@ -395,6 +403,7 @@ private fun CalendarDateRangePicker(
     onDayTap: (Int) -> Unit,
     onViewYear: (Int) -> Unit,
     onViewMonth: (Int) -> Unit,
+    compact: Boolean = false,
 ) {
     val maxDay = calendarSystem.monthLength(viewYear, viewMonth)
     val days = calendarSystem.dayBounds(viewYear, viewMonth, maxDay, minDate, maxDate)
@@ -412,11 +421,17 @@ private fun CalendarDateRangePicker(
 
     val fromKey = fromDate.year * 10000 + fromDate.month * 100 + fromDate.day
     val toKey = toDate?.let { it.year * 10000 + it.month * 100 + it.day }
+    val columnSpacing =
+        if (compact) {
+            ShamsiPickerDimens.COMPACT_CALENDAR_COLUMN_SPACING_DP
+        } else {
+            ShamsiPickerDimens.CALENDAR_COLUMN_SPACING_DP
+        }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(ShamsiPickerDimens.CALENDAR_COLUMN_SPACING_DP.dp),
+        verticalArrangement = Arrangement.spacedBy(columnSpacing.dp),
     ) {
         NavRow(
             label = calendarSystem.monthNames(viewYear)[viewMonth - 1],
@@ -426,6 +441,7 @@ private fun CalendarDateRangePicker(
             nextEnabled = beforeMax(nextMonth.first, nextMonth.second),
             colors = colors,
             typography = typography,
+            compact = compact,
             onPrev = {
                 onViewMonth(prevMonth.second)
                 if (prevMonth.first != viewYear) onViewYear(prevMonth.first)
@@ -443,6 +459,7 @@ private fun CalendarDateRangePicker(
             nextEnabled = maxDate == null || viewYear + 1 <= maxDate.year,
             colors = colors,
             typography = typography,
+            compact = compact,
             onPrev = { onViewYear(viewYear - 1) },
             onNext = { onViewYear(viewYear + 1) },
         )
@@ -484,6 +501,7 @@ private fun CalendarDateRangePicker(
                                     numberFormatter = numberFormatter,
                                     colors = colors,
                                     typography = typography,
+                                    compact = compact,
                                     onClick = { onDayTap(dayNumber) },
                                 )
                             }
@@ -524,9 +542,13 @@ private fun RangeDayCell(
     colors: ShamsiPickerColors,
     typography: ShamsiPickerTypography,
     onClick: () -> Unit,
+    compact: Boolean = false,
 ) {
     val sameDay = isFrom && isTo
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val rowHeight =
+        if (compact) ShamsiPickerDimens.COMPACT_RANGE_DAY_ROW_HEIGHT_DP else ShamsiPickerDimens.RANGE_DAY_ROW_HEIGHT_DP
+    val cellSize = if (compact) ShamsiPickerDimens.COMPACT_DAY_CELL_SIZE_DP else ShamsiPickerDimens.DAY_CELL_SIZE_DP
 
     val circleColor by animateColorAsState(
         if (isFrom || isTo) colors.accentColor else Color.Transparent,
@@ -536,11 +558,11 @@ private fun RangeDayCell(
     Box(
         modifier =
             Modifier
-                .height(ShamsiPickerDimens.RANGE_DAY_ROW_HEIGHT_DP.dp)
+                .height(rowHeight.dp)
                 .fillMaxWidth()
                 .drawBehind {
                     if (!sameDay) {
-                        val stripH = ShamsiPickerDimens.DAY_CELL_SIZE_DP.dp.toPx()
+                        val stripH = cellSize.dp.toPx()
                         val stripTop = (size.height - stripH) / 2f
                         val half = size.width / 2f
                         // In LTR "from" is earlier (left side) so its strip extends right toward "to".
@@ -579,7 +601,7 @@ private fun RangeDayCell(
         Box(
             modifier =
                 Modifier
-                    .size(ShamsiPickerDimens.DAY_CELL_SIZE_DP.dp)
+                    .size(cellSize.dp)
                     .clip(CircleShape)
                     .background(circleColor),
             contentAlignment = Alignment.Center,

@@ -11,6 +11,12 @@ import java.time.DayOfWeek
  * - [ShamsiDate.Now] or [ShamsiDateLimit.Now] — evaluates to the current date at open time
  * - `LocalDate.of(...).asLimit()` — a fixed Gregorian date converted to Shamsi
  * - `LocalDate.now().asLimit()` — the current Gregorian date converted to Shamsi
+ *
+ * [compactCalendar] shrinks the Calendar-style grid (smaller day cells, tighter
+ * spacing) for layouts where the picker shares space with other controls.
+ *
+ * [compactWheel] shows only the selected row of the Wheel-style picker, with no
+ * dimmed rows above/below, for the same space-constrained layouts.
  */
 public data class ShamsiDatePickerConfig(
     val initialDate: ShamsiDateLimit = ShamsiDate.Now,
@@ -19,4 +25,6 @@ public data class ShamsiDatePickerConfig(
     val style: ShamsiDatePickerStyle = ShamsiDatePickerStyle.Wheel,
     val calendarType: CalendarType = CalendarType.Shamsi,
     val firstDayOfWeek: DayOfWeek? = null,
+    val compactCalendar: Boolean = false,
+    val compactWheel: Boolean = false,
 )

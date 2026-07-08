@@ -61,3 +61,22 @@ public data class ShamsiTimeRangePickerStrings(
     val amLabel: String,
     val pmLabel: String,
 )
+
+/**
+ * User-facing text for [io.github.alirezajavan.shamsipicker.ui.ShamsiDateTimePickerDialog].
+ *
+ * Build one with [ShamsiPickerDefaults.dateTimeStrings].
+ */
+public data class ShamsiDateTimePickerStrings(
+    val title: String,
+    val confirmText: String,
+    val cancelText: String,
+    val styleWheelLabel: String,
+    val styleCalendarLabel: String,
+    val prevMonthDescription: String,
+    val nextMonthDescription: String,
+    val prevYearDescription: String,
+    val nextYearDescription: String,
+    val amLabel: String,
+    val pmLabel: String,
+)
