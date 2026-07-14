@@ -40,9 +40,9 @@ This project is split into two modules:
 |                            :---:                             |                           :---:                           |                           :---:                           |
 | <img src="screenshots/dateperiodcalendar.png" width="100%"/> | <img src="screenshots/dateperiodwheel.png" width="100%"/> | <img src="screenshots/timeperiodwheel.png" width="100%"/> |
 
-|              Date + Time Picker (Wheel)               |              Date + Time Picker (Calendar)               |
-|:-------------------------------------------------------:|:------------------------------------------------------------:|
-| <img src="screenshots/datetimewheel.png" width="100%"/> | <img src="screenshots/datetimecalendar.png" width="100%"/> |
+|              Date + Time Picker (Wheel)               |              Date + Time Picker (Calendar)               | Config                                           |
+|:-------------------------------------------------------:|:------------------------------------------------------------:|--------------------------------------------------|
+| <img src="screenshots/datetimewheel.png" width="100%"/> | <img src="screenshots/datetimecalendar.png" width="100%"/> | <img src="screenshots/config.png" width="100%"/> |
 
 ## Installation
 
